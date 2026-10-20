@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google-signin-client_id" content="678717011887-3gh7chfl1fc8j3d10g0fma01h4qltnfb.apps.googleusercontent.com">
+    <title>ספריית אקורדים מקומית</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- תפריט חשבון מתקפל: התחברות, אופליין ועותקים -->
+    <div id="accountMenu" class="account-menu">
+        <button id="accountToggleBtn" class="account-toggle">
+            <span>👤</span>
+            <span id="accountOfflineIcon" class="hidden">📴</span>
+            <span id="accountLabel">התחברות</span>
+            <span id="accountStatus"></span>
+            <span class="caret">▾</span>
+        </button>
+        <div id="accountPanel" class="account-panel hidden">
+            <div id="accountInfo"></div>
+            <div class="offline-row">
+                <button id="downloadOfflineBtn" class="hidden" disabled>📥 הורד לשימוש אופליין</button>
+                <button id="manageOfflineBtn">🗂️ עותקי אופליין</button>
+            </div>
+            <div id="offlineBanner" class="offline-banner hidden"></div>
+        </div>
+    </div>
+
+    <div class="mobile-header">
+        <button id="menuToggleBtn" class="menu-btn">☰ ספרייה</button>
+        <span class="mobile-title">האקורדים שלי 🎸</span>
+    </div>
+
+    <div class="app-layout">
+        <!-- מסך כהה לסגירת התפריט בנייד בלחיצה בחוץ -->
+        <div id="drawerOverlay" class="drawer-overlay"></div>
+
+        <!-- סרגל צד / מגירה -->
+        <aside class="sidebar" id="sidebarArea">
+            <div class="sidebar-header">
+                <h2 id="sidebarTitle">📚 הספרייה העברית</h2>
+                <button id="closeSidebarBtn" class="close-sidebar-btn">✕</button>
+            </div>
+            <div class="lib-switch">
+                <button id="libHeBtn" class="active">עברית</button>
+                <button id="libEnBtn">English</button>
+            </div>
+            <div class="sidebar-actions">
+                <button id="addFolderBtnRoot">➕ תיקייה חדשה</button>
+            </div>
+            
+            <div id="libraryContainer"></div>
+
+            <div id="rootDropZone" class="root-drop-zone">
+                📥 גרור לכאן כדי להעביר לתיקייה הראשית
+            </div>
+        </aside>
+
+        <!-- אזור מרכזי -->
+        <main class="main-content">
+            <div class="container">
+                <h1 class="desktop-only">האקורדים שלי 🎸</h1>
+                
+                <div class="search-area">
+                    <input type="text" id="searchInput" placeholder="חפש שיר (לחץ Enter)...">
+                    <button id="searchBtn">חפש</button>
+                </div>
+
+                <div class="controls">
+                    <button id="transposeUp">העלה חצי טון (+)</button>
+                    <button id="transposeDown">הורד חצי טון (-)</button>
+                    <div class="font-size-group">
+                        <button id="fontSmallerBtn" title="הקטן גופן">A−</button>
+                        <span id="fontSizeLabel"></span>
+                        <button id="fontBiggerBtn" title="הגדל גופן">A+</button>
+                    </div>
+                    <button id="saveBtn" class="hidden">💾 שמור שיר לראשי</button>
+                    <button id="saveChangesBtn" class="hidden">💾 שמור שינויים בשיר</button>
+                </div>
+
+                <div id="sourceInfo" class="hidden"></div>
+                
+                <div id="songDisplayWrapper">
+                    <div id="songDisplay">
+                        חפש שיר כדי לשאוב אותו, או בחר שיר מעץ התיקיות...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- תפריט קליק ימני / לחיצה ארוכה -->
+    <div id="contextMenu" class="context-menu hidden">
+        <ul id="contextMenuList"></ul>
+    </div>
+
+    <!-- מודאל בחירת צבע -->
+    <div id="colorModal" class="modal-overlay hidden">
+        <div class="color-palette-card">
+            <h3>בחר צבע לתיקייה</h3>
+            <div class="palette-grid" id="paletteGrid"></div>
+            <button id="closePaletteBtn">ביטול</button>
+        </div>
+    </div>
+
+    <!-- מודאל העברה לתיקייה -->
+    <div id="moveModal" class="modal-overlay hidden">
+        <div class="color-palette-card move-card">
+            <h3>העבר לתיקייה</h3>
+            <div id="moveFolderList" class="move-folder-list"></div>
+            <button id="closeMoveBtn">ביטול</button>
+        </div>
+    </div>
+
+    <!-- מודאל עותקי אופליין -->
+    <div id="offlineModal" class="modal-overlay hidden">
+        <div class="color-palette-card move-card">
+            <h3>עותקי אופליין</h3>
+            <div id="offlineList" class="move-folder-list"></div>
+            <button id="closeOfflineBtn">סגור</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script type="module" src="firebase-sync.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

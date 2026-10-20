@@ -1,0 +1,148 @@
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background-color: #f1f5f9; color: #1e293b; direction: rtl; height: 100vh; overflow: hidden; }
+
+/* כותרת עליונה לנייד */
+.mobile-header { display: none; background: #ffffff; padding: 12px 16px; border-bottom: 1px solid #cbd5e1; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.mobile-title { font-weight: bold; font-size: 16px; }
+.menu-btn { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+.close-sidebar-btn { display: none; background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b; }
+
+.app-layout { display: flex; height: 100vh; }
+
+/* סרגל צד */
+.sidebar { width: 340px; background: #ffffff; border-left: 1px solid #cbd5e1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; position: relative; user-select: none; z-index: 100; transition: transform 0.3s ease; }
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+.sidebar h2 { font-size: 18px; color: #334155; }
+.sidebar-actions { margin-bottom: 15px; }
+.sidebar-actions button { padding: 9px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; width: 100%; font-weight: bold; }
+
+/* עץ תיקיות */
+.tree-list { list-style: none; padding-right: 14px; border-right: 1px dashed #cbd5e1; margin-top: 4px; display: none; }
+.tree-root > .tree-list { padding-right: 0; border-right: none; display: block; } 
+.is-open > .tree-list { display: block; }
+
+.tree-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; margin: 3px 0; border-radius: 6px; cursor: pointer; background: #f8fafc; border: 1px solid transparent; transition: background 0.15s; }
+.tree-item:hover { filter: brightness(0.96); }
+
+.item-left-controls { display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden; }
+.toggle-arrow { font-size: 12px; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b; }
+.toggle-placeholder { width: 22px; display: inline-block; }
+
+.item-title { display: flex; align-items: center; gap: 8px; flex: 1; font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-icon { font-size: 16px; display: inline-flex; align-items: center; }
+.folder-svg { display: block; }
+
+.item-actions-bar { display: flex; align-items: center; gap: 4px; }
+.action-icon-btn { background: none; border: none; cursor: pointer; font-size: 15px; padding: 4px 6px; border-radius: 4px; color: #64748b; }
+.action-icon-btn.delete-btn:hover { background: #fee2e2; color: #ef4444; }
+
+.root-drop-zone { padding: 14px; border: 2px dashed #94a3b8; border-radius: 8px; text-align: center; font-size: 13px; color: #64748b; background: #f8fafc; margin-top: 20px; }
+
+/* אזור מרכזי */
+.main-content { flex: 1; padding: 25px; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start; }
+.container { background: #ffffff; max-width: 800px; width: 100%; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+h1.desktop-only { text-align: center; margin-bottom: 20px; }
+
+.search-area { display: flex; gap: 10px; margin-bottom: 15px; }
+#searchInput { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; outline: none; }
+#searchBtn { padding: 12px 18px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; }
+
+.controls { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+.controls button { flex: 1; min-width: 120px; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #e2e8f0; font-weight: bold; }
+#saveBtn { background: #10b981; color: white; }
+.font-size-group { display: flex; align-items: center; gap: 6px; }
+.controls .font-size-group button { flex: none; min-width: 44px; font-size: 15px; }
+#fontSizeLabel { min-width: 28px; text-align: center; font-size: 13px; font-weight: bold; color: #64748b; }
+
+#sourceInfo { margin-bottom: 15px; font-size: 13px; color: #64748b; font-weight: bold; }
+.hidden { display: none !important; }
+
+/* תצוגת השיר */
+#songDisplayWrapper { overflow-x: auto; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+#songDisplay {
+    padding: 20px; font-family: 'Courier New', Courier, monospace;
+    white-space: pre; line-height: 1.5; font-size: 15px;
+    direction: rtl; text-align: right; min-height: 350px;
+}
+
+/* תפריט הקשר ופלטה */
+.context-menu { position: fixed; background: #ffffff; border: 1px solid #cbd5e1; box-shadow: 0 4px 14px rgba(0,0,0,0.12); border-radius: 8px; z-index: 1000; min-width: 170px; padding: 5px 0; }
+.context-menu ul { list-style: none; }
+.context-menu li { padding: 10px 14px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.context-divider { height: 1px; background: #e2e8f0; margin: 4px 0; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+.color-palette-card { background: white; padding: 22px; border-radius: 12px; width: 300px; text-align: center; }
+.palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 18px; margin-top: 15px; }
+.color-circle { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; }
+#closePaletteBtn { padding: 8px; width: 100%; border-radius: 6px; border: none; background: #e2e8f0; font-weight: bold; }
+
+/* ==================================================== */
+/* ספרייה עברית / אנגלית */
+.sidebar > * { flex-shrink: 0; }
+.lib-switch { direction: rtl; display: flex; gap: 0; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
+.lib-switch button { flex: 1; padding: 8px; background: #f8fafc; border: none; cursor: pointer; font-size: 14px; font-weight: bold; color: #64748b; }
+.lib-switch button.active { background: #3b82f6; color: #fff; }
+.app-layout.lang-en { flex-direction: row-reverse; }
+.sidebar.lang-en { direction: ltr; border-left: none; border-right: 1px solid #cbd5e1; }
+.sidebar.lang-en .tree-list { padding-right: 0; border-right: none; padding-left: 14px; border-left: 1px dashed #cbd5e1; }
+.sidebar.lang-en .tree-root > .tree-list { padding-left: 0; border-left: none; }
+.menu-dots-btn { font-size: 20px; font-weight: bold; padding: 2px 8px; }
+.move-card { max-width: 340px; width: 90%; max-height: 80vh; display: flex; flex-direction: column; }
+.move-folder-list { overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin: 10px 0; }
+.move-folder-btn { text-align: start; padding: 10px 12px; background: #f1f5f9; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.move-folder-btn:disabled { opacity: 0.5; cursor: default; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 14px; z-index: 3000; }
+
+/* חשבון ועותקי אופליין */
+.account-menu { position: fixed; left: 12px; top: 8px; z-index: 1500; direction: rtl; }
+.account-toggle { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; color: #334155; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.account-toggle .caret { font-size: 11px; color: #64748b; }
+.account-panel { position: absolute; top: calc(100% + 6px); left: 0; width: 270px; max-width: calc(100vw - 24px); background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); padding: 12px; font-size: 13px; }
+@media (min-width: 769px) { .sidebar.lang-en .sidebar-header { margin-top: 38px; } }
+#accountInfo .auth-container { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+#accountInfo .auth-email { font-size: 12px; color: #64748b; direction: ltr; text-align: right; word-break: break-all; }
+.offline-row { display: flex; gap: 6px; margin-top: 8px; }
+.offline-row button { flex: 1; padding: 7px 6px; font-size: 12px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; cursor: pointer; }
+.offline-row button:disabled { opacity: 0.5; cursor: default; }
+.offline-banner { margin-top: 8px; padding: 6px 8px; background: #fef3c7; color: #92400e; border-radius: 6px; font-size: 12px; }
+#saveChangesBtn { background: #f59e0b; color: white; }
+.offline-row-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px; background: #f1f5f9; border-radius: 6px; text-align: right; font-size: 13px; }
+.offline-info { white-space: pre-line; word-break: break-all; }
+.offline-btns { display: flex; gap: 4px; }
+.offline-btns button { padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; background: #e2e8f0; }
+
+/* כללי התאמה לטלפון (מסכים קטנים מ-768 פיקסלים) */
+/* ==================================================== */
+@media (max-width: 768px) {
+    .mobile-header { display: flex; padding-left: 80px; }
+    .desktop-only { display: none; }
+    .close-sidebar-btn { display: block; }
+    
+    .app-layout { height: calc(100vh - 53px); position: relative; }
+    
+    /* הפיכת הסרגל למגירה נשלפת */
+    .sidebar {
+        position: absolute; top: 0; right: 0; bottom: 0; width: 85%; max-width: 320px;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+        transform: translateX(100%);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .app-layout.lang-en { flex-direction: row; }
+    #accountLabel { display: none; }
+    .account-toggle { padding: 6px 10px; }
+    body:has(.sidebar.open) .account-menu { display: none; }
+    .sidebar.lang-en { right: auto; left: 0; transform: translateX(-100%); box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
+    .sidebar.lang-en.open { transform: translateX(0); }
+
+    .drawer-overlay {
+        display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5); z-index: 90;
+    }
+    .drawer-overlay.active { display: block; }
+
+    .main-content { padding: 12px; }
+    .container { padding: 15px; }
+    
+    #songDisplay { font-size: 13px; padding: 12px; }
+    .root-drop-zone { display: none; } /* במובייל אין גרירה עם עכבר, משתמשים בלחיצה או בתפריט */
+}
