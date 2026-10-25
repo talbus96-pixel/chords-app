@@ -1,0 +1,17 @@
+{
+  "name": "האקורדים שלי",
+  "short_name": "אקורדים",
+  "description": "ספריית אקורדים אישית",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#efe5cc",
+  "theme_color": "#1f6b3a",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

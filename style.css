@@ -1,4 +1,4 @@
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: "Rubik", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
 body { background-color: #f1f5f9; color: #1e293b; direction: rtl; height: 100vh; overflow: hidden; }
 
 /* כותרת עליונה לנייד */
@@ -105,11 +105,65 @@ h1.desktop-only { text-align: center; margin-bottom: 20px; }
 .offline-row button { flex: 1; padding: 7px 6px; font-size: 12px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; cursor: pointer; }
 .offline-row button:disabled { opacity: 0.5; cursor: default; }
 .offline-banner { margin-top: 8px; padding: 6px 8px; background: #fef3c7; color: #92400e; border-radius: 6px; font-size: 12px; }
+.sync-error { margin-top: 8px; padding: 6px 8px; background: #fee2e2; color: #991b1b; border-radius: 6px; font-size: 11px; unicode-bidi: plaintext; text-align: start; word-break: break-word; }
+#libraryContainer > li { list-style: none; }
 #saveChangesBtn { background: #f59e0b; color: white; }
 .offline-row-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px; background: #f1f5f9; border-radius: 6px; text-align: right; font-size: 13px; }
 .offline-info { white-space: pre-line; word-break: break-all; }
 .offline-btns { display: flex; gap: 4px; }
 .offline-btns button { padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; background: #e2e8f0; }
+
+/* ==================================================== */
+/* עיצוב "מזכרת אירית": נייר ישן, ירוק אירי, זהב */
+:root {
+    --bg: #efe5cc; --surface: #fbf6e6; --surface-2: #f4ecd6; --border: #d6c49a;
+    --text: #2d2a1e; --muted: #7a6f52;
+    --green: #1f6b3a; --green-dark: #154d29; --green-soft: #dcebd8;
+    --gold: #c49a2c; --gold-soft: #f1e2b3;
+    --title-font: "Amatic SC", "Rubik", Georgia, serif;
+}
+body { background-color: var(--bg); color: var(--text);
+    background-image: radial-gradient(circle at 20% 10%, rgba(255,255,255,0.5), transparent 40%), radial-gradient(circle at 80% 90%, rgba(196,154,44,0.08), transparent 45%); }
+.mobile-header { background: var(--green); border-bottom: 3px solid var(--gold); }
+.mobile-title { color: #fff; font-family: var(--title-font); font-weight: 700; font-size: 24px; letter-spacing: 0.5px; }
+.menu-btn { background: var(--gold); color: var(--green-dark); }
+.close-sidebar-btn { color: var(--muted); }
+.sidebar { background: var(--surface); border-left: 3px double var(--gold); }
+.sidebar.lang-en { border-left: none; border-right: 3px double var(--gold); }
+.sidebar h2 { color: var(--green); font-family: var(--title-font); font-weight: 700; font-size: 26px; }
+.sidebar-actions button { background: var(--green); color: #fff; }
+.tree-list { border-right-color: var(--border); }
+.sidebar.lang-en .tree-list { border-left-color: var(--border); }
+.tree-item { background: var(--surface-2); }
+.toggle-arrow, .action-icon-btn { color: var(--muted); }
+.root-drop-zone { background: var(--surface-2); border-color: var(--border); color: var(--muted); }
+.container { background: var(--surface); border: 2px solid var(--green); outline: 1px solid var(--gold); outline-offset: -7px; box-shadow: 0 8px 26px rgba(60, 45, 10, 0.15); border-radius: 10px; }
+h1.desktop-only { color: var(--green); font-family: var(--title-font); font-weight: 700; font-size: 48px; line-height: 1.1; }
+h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); font-size: 18px; margin-top: 2px; font-family: "Segoe UI Symbol", sans-serif; }
+#searchInput { background: #fffdf5; border-color: var(--border); color: var(--text); }
+#searchInput:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(31, 107, 58, 0.18); }
+#searchBtn { background: var(--green); color: #fff; }
+.controls button { background: var(--gold-soft); color: var(--green-dark); border: 1px solid var(--border); }
+#saveBtn { background: var(--green); color: #fff; }
+#saveChangesBtn { background: var(--gold); color: #fff; }
+#fontSizeLabel { color: var(--muted); }
+#sourceInfo { color: var(--muted); font-style: italic; }
+#songDisplayWrapper { background: #fffdf5; border: 1px solid var(--border); }
+#songDisplay { color: var(--text); }
+.lib-switch { border-color: var(--gold); }
+.lib-switch button { background: var(--surface-2); color: var(--muted); }
+.lib-switch button.active { background: var(--green); color: #fff; }
+.account-toggle, .account-panel, .context-menu { background: var(--surface); border-color: var(--border); color: var(--text); }
+#firebaseLoginBtn { background: var(--green) !important; color: #fff !important; }
+#firebaseUserDisplay { color: var(--text) !important; }
+.offline-row button { background: var(--surface); border-color: var(--border); color: var(--text); }
+.color-palette-card { background: var(--surface); border: 2px solid var(--green); }
+.color-palette-card h3 { color: var(--green); font-family: var(--title-font); font-weight: 700; font-size: 26px; }
+#closePaletteBtn, #closeMoveBtn, #closeOfflineBtn, .offline-btns button { background: var(--gold-soft); color: var(--green-dark); border: none; border-radius: 6px; padding: 8px; font-weight: bold; cursor: pointer; }
+.move-folder-btn, .offline-row-item { background: var(--surface-2); color: var(--text); }
+.context-divider { background: var(--border); }
+.toast { background: var(--green-dark); border: 1px solid var(--gold); }
+.context-menu li:hover, .move-folder-btn:hover:not(:disabled) { background: var(--green-soft); }
 
 /* כללי התאמה לטלפון (מסכים קטנים מ-768 פיקסלים) */
 /* ==================================================== */

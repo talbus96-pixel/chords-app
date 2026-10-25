@@ -7,7 +7,7 @@ import {
     signOut,
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { initializeFirestore, doc, setDoc, onSnapshot, getDocFromServer } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAnLv5Gme0d8G-UH9ghz1yZAa8hTjPM8bE",
@@ -20,7 +20,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+// באפליקציית האנדרואיד: חיבור "long polling" לענן, שעובד גם כשהחיבור הרגיל נתקע (שעון חול שלא נגמר)
+const db = initializeFirestore(app, isCapacitorNative() ? { experimentalForceLongPolling: true } : {});
 const provider = new GoogleAuthProvider();
 
 const GUEST_KEY = "chordLibraryData";
@@ -31,6 +32,34 @@ let cloudReady = false;
 let unsubscribeSnapshot = null;
 let userDisplayEl = null;
 let baseUserName = "";
+
+// ---- שינויים שעוד לא אושרו בענן ----
+// כל שמירה מסמנת "יש שינוי שממתין". הסימון נמחק רק אחרי שהענן אישר את הכתיבה.
+// אם האפליקציה נסגרה / לא היה חיבור, בפעם הבאה שהענן עונה ממזגים במקום לדרוס.
+function pendingKey(uid) { return "pendingSync_" + uid; }
+function baseKey(uid) { return "cloudBase_" + uid; }
+function getPending(uid) { try { return localStorage.getItem(pendingKey(uid)); } catch (e) { return null; } }
+window.markPendingSync = () => {
+    if (!auth.currentUser) return;
+    try { localStorage.setItem(pendingKey(auth.currentUser.uid), String(Date.now())); } catch (e) {}
+};
+// הבסיס = הספרייה כפי שהענן מכיר אותה. משמש למיזוג (לדעת מה השתנה במכשיר ומה נמחק)
+function saveBase(uid, he, en) {
+    try { localStorage.setItem(baseKey(uid), JSON.stringify({ he, en })); } catch (e) {}
+}
+function readBase(uid) {
+    try {
+        const b = JSON.parse(localStorage.getItem(baseKey(uid)));
+        return b && validLib(b.he) && validLib(b.en) ? b : null;
+    } catch (e) { return null; }
+}
+
+function setSyncError(text) {
+    const el = document.getElementById("syncError");
+    if (!el) return;
+    el.innerText = text || "";
+    el.classList.toggle("hidden", !text);
+}
 
 function setStatus(text) {
     if (userDisplayEl && baseUserName) {
@@ -88,14 +117,20 @@ function hasContent(lib) {
 export async function saveLibraryToCloud() {
     // הגנות: לא כותבים אם לא מחוברים, אם הענן עוד לא אומת, או אם אין ספריות
     if (!auth.currentUser || !cloudReady || !window.getLibrariesForCloud) return;
+    const uid = auth.currentUser.uid;
+    const pendingAtStart = getPending(uid);
     try {
         const libs = window.getLibrariesForCloud();
-        const docRef = doc(db, "users_libraries", auth.currentUser.uid);
+        const docRef = doc(db, "users_libraries", uid);
         await setDoc(docRef, {
             libraryData: libs.he,
             libraryDataEn: libs.en,
             lastUpdated: new Date().toISOString()
         });
+        saveBase(uid, libs.he, libs.en);
+        // מוחקים את הסימון רק אם לא נעשה שינוי חדש בזמן שהכתיבה הזו הייתה בדרך
+        if (getPending(uid) === pendingAtStart) { try { localStorage.removeItem(pendingKey(uid)); } catch (e) {} }
+        setSyncError("");
         setStatus("☁️✓");
     } catch (error) {
         console.error("שגיאה בשמירת הנתונים לענן:", error);
@@ -104,44 +139,93 @@ export async function saveLibraryToCloud() {
 }
 window.saveLibraryToCloud = saveLibraryToCloud;
 
+let readyCheckTimer = null;
+
 function startCloudSync(user) {
     cloudReady = false;
     if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+    clearTimeout(readyCheckTimer);
 
     window.libraryStorageKey = GUEST_KEY + "_" + user.uid;
+    // מציגים מיד את מה שנשמר במכשיר למשתמש הזה (ולא את ספריית האורח) עד שהענן עונה
+    if (window.loadUserLibrariesForStart) window.loadUserLibrariesForStart(user.email || "");
+    setSyncError("");
     setStatus("⏳");
 
     const docRef = doc(db, "users_libraries", user.uid);
-    unsubscribeSnapshot = onSnapshot(docRef, (snap) => {
+
+    const handleSnapshot = (snap) => {
         // שינוי שאנחנו עצמנו כתבנו ועוד לא אושר בשרת - מתעלמים
         if (snap.metadata.hasPendingWrites) return;
         const confirmed = !snap.metadata.fromCache;
+        // הפעם הראשונה של הגרסה הזו במכשיר (אין עדיין בסיס): ממזגים פעם אחת, כדי ששירים שנשמרו רק במכשיר
+        // (בגרסה הקודמת, בזמן שעון חול) יעלו לענן ולא יימחקו. לא עושים זאת אם עותק האופליין הפעיל שייך לחשבון אחר
+        const copyEmail = window.activeOfflineCopyEmail ? window.activeOfflineCopyEmail() : null;
+        const firstRun = !readBase(user.uid) && (!copyEmail || copyEmail === user.email);
+        const pending = !!getPending(user.uid) || firstRun;
+        // יש במכשיר שינויים שלא הגיעו לענן: לא דורסים אותם בנתוני מטמון. מחכים לתשובה אמיתית מהשרת
+        if (pending && !confirmed) return;
 
         if (snap.exists()) {
             const d = snap.data();
             const heOk = validLib(d.libraryData);
             const enOk = validLib(d.libraryDataEn);
-            window.applyLibrariesFromCloud(heOk ? d.libraryData : fallbackLib("he"), enOk ? d.libraryDataEn : fallbackLib("en"));
+            let he = heOk ? d.libraryData : fallbackLib("he");
+            let en = enOk ? d.libraryDataEn : fallbackLib("en");
+            if (pending) {
+                // ממזגים את מה שנשמר במכשיר בזמן שלא היה חיבור, במקום למחוק אותו
+                const merged = window.mergeLibraries({ he, en }, window.getLibrariesForCloud(), readBase(user.uid));
+                he = merged.he; en = merged.en;
+            }
+            window.applyLibrariesFromCloud(he, en);
             cloudReady = confirmed;
+            if (confirmed) { clearTimeout(readyCheckTimer); setSyncError(""); }
+            if (confirmed && !pending && heOk && enOk) saveBase(user.uid, d.libraryData, d.libraryDataEn);
             setStatus(cloudReady ? "☁️✓" : "⏳");
-            // חסרה ספרייה (מסמך מגרסה ישנה, או שגרסה ישנה מחקה אותה): משלימים בענן, רק אחרי אישור שרת
-            if (confirmed && !(heOk && enOk)) saveLibraryToCloud();
+            // חסרה ספרייה (מסמך מגרסה ישנה), או שמיזגנו שינויים מהמכשיר: כותבים לענן, רק אחרי אישור שרת
+            if (confirmed && (pending || !(heOk && enOk))) saveLibraryToCloud();
         } else if (confirmed) {
             // השרת אישר שאין עדיין מסמך למשתמש הזה: יוצרים אותו
             cloudReady = true;
+            clearTimeout(readyCheckTimer);
+            setSyncError("");
             window.applyLibrariesFromCloud(fallbackLib("he"), fallbackLib("en"));
             saveLibraryToCloud();
         }
         // מסמך לא קיים + נתוני מטמון בלבד = כנראה אין אינטרנט. לא עושים כלום.
-    }, (error) => {
+    };
+
+    unsubscribeSnapshot = onSnapshot(docRef, handleSnapshot, (error) => {
         console.error("שגיאת סנכרון:", error);
         cloudReady = false;
         setStatus("⚠️ אין חיבור לענן");
+        setSyncError("שגיאת ענן: " + (error.code || "") + " " + (error.message || error));
     });
+
+    // אם אחרי 15 שניות הענן עדיין לא ענה: מנסים קריאה ישירה. אם היא מצליחה - ממשיכים איתה,
+    // ואם נכשלת - מציגים בחלונית החשבון את סיבת השגיאה (במקום שעון חול בלי הסבר)
+    readyCheckTimer = setTimeout(async () => {
+        if (cloudReady || !auth.currentUser || auth.currentUser.uid !== user.uid) return;
+        try {
+            const snap = await getDocFromServer(docRef);
+            if (!cloudReady && auth.currentUser && auth.currentUser.uid === user.uid) handleSnapshot(snap);
+        } catch (e) {
+            console.error("הענן לא עונה:", e);
+            if (!cloudReady) {
+                setStatus("⚠️ אין חיבור לענן");
+                // בלי אינטרנט זה מצב רגיל (שימוש אופליין), לא שגיאה
+                setSyncError(navigator.onLine === false
+                    ? "📴 אין אינטרנט. מוצגת הספרייה ששמורה במכשיר. שינויים יעלו לענן כשהחיבור יחזור."
+                    : "הענן לא עונה: " + (e.code || "") + " " + (e.message || e));
+            }
+        }
+    }, 15000);
 }
 
 function stopCloudSync() {
     cloudReady = false;
+    clearTimeout(readyCheckTimer);
+    setSyncError("");
     if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
     window.libraryStorageKey = GUEST_KEY;
     if (window.reloadLibraryFromLocal) window.reloadLibraryFromLocal();

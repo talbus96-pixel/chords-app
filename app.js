@@ -4,17 +4,19 @@ let currentLibNodeId = null; // מזהה השיר שמוצג, אם נפתח מה
 let activeFolderForColor = null;
 
 // 10 צבעים ייעודיים לבחירה
+// צבעים בסגנון אירי: ירוקים, זהב, חום, בורדו, אברש, כחול ים ואבן
+const DEFAULT_FOLDER_COLOR = "#1f6b3a";
 const PRESET_COLORS = [
-    "#ef4444", // אדום
-    "#f97316", // כתום
-    "#f59e0b", // ענבר/צהוב
-    "#10b981", // ירוק
-    "#06b6d4", // טורקיז
-    "#3b82f6", // כחול
-    "#6366f1", // אינדיגו
-    "#8b5cf6", // סגול
-    "#ec4899", // ורוד
-    "#64748b"  // אפור
+    "#1f6b3a", // ירוק אירי
+    "#5c8a3a", // ירוק אזוב
+    "#3f8f7a", // ירוק ים
+    "#c49a2c", // זהב
+    "#c8742c", // ענבר
+    "#8b4a2b", // חום אדמה
+    "#8e2c3a", // בורדו
+    "#7a5a8c", // סגול אברש
+    "#3d6a8a", // כחול ים
+    "#7a7466"  // אבן
 ];
 
 const searchInput = document.getElementById("searchInput");
@@ -50,7 +52,7 @@ const GUEST_LIB_KEY = "chordLibraryData";
 window.libraryStorageKey = GUEST_LIB_KEY;
 
 function emptyLibrary(lang) {
-    return { id: "root", type: "folder", name: lang === "en" ? "My Library" : "הספרייה שלי", color: "#3b82f6", isExpanded: true, children: [] };
+    return { id: "root", type: "folder", name: lang === "en" ? "My Library" : "הספרייה שלי", color: DEFAULT_FOLDER_COLOR, isExpanded: true, children: [] };
 }
 
 function parseLibrary(raw, lang) {
@@ -92,12 +94,21 @@ function isReadOnlyOffline() {
     try { return window.libraryStorageKey === GUEST_LIB_KEY && !!localStorage.getItem("offlineActiveId"); } catch (e) { return false; }
 }
 
+let lastStorageFullToast = 0;
 function persistLocal() {
-    if (isReadOnlyOffline()) return;
+    if (isReadOnlyOffline()) return false;
     try {
         localStorage.setItem(storageKeyFor(window.libraryStorageKey, "he"), JSON.stringify(libs.he));
         localStorage.setItem(storageKeyFor(window.libraryStorageKey, "en"), JSON.stringify(libs.en));
-    } catch (e) {}
+        return true;
+    } catch (e) {
+        // הזיכרון של הדפדפן/האפליקציה מלא: לא שותקים, מודיעים
+        if (Date.now() - lastStorageFullToast > 15000) {
+            lastStorageFullToast = Date.now();
+            showToast("⚠️ אין מספיק מקום במכשיר. מחק עותקי אופליין ישנים");
+        }
+        return false;
+    }
 }
 
 // --- פונקציות שקוד הענן (firebase-sync.js) משתמש בהן ---
@@ -127,6 +138,76 @@ window.readUserLibraries = function () {
 
 window.emptyLibraries = function () { return { he: emptyLibrary("he"), en: emptyLibrary("en") }; };
 
+// נקרא מיד כשמשתמש מתחבר, לפני שהענן עונה: מציג את מה שנשמר במכשיר למשתמש הזה.
+// (בלי זה הוצגה ספריית האורח / עותק האופליין, ושינויים שנשמרו בטלפון "חזרו למקור" עד שהענן ענה)
+// אם אין במכשיר כלום למשתמש: עותק האופליין רק אם הוא של אותו חשבון, אחרת ספרייה ריקה עד שהענן יענה
+window.loadUserLibrariesForStart = function (email) {
+    let he = readLibraryFromStorage("he"), en = readLibraryFromStorage("en");
+    if (he.children.length === 0 && en.children.length === 0) {
+        const c = activeCopy();
+        if (c && c.email && c.email === email) {
+            he = parseLibrary(JSON.stringify(c.he), "he");
+            en = parseLibrary(JSON.stringify(c.en), "en");
+        }
+    }
+    replaceInPlace(libs.he, he);
+    replaceInPlace(libs.en, en);
+    renderLibrary();
+    updateOfflineBanner();
+    updateSaveChangesBtn();
+};
+
+// מיזוג אחרי שהמכשיר היה מנותק מהענן ונשמרו בו שינויים.
+// base = הספרייה כפי שהייתה בענן בפעם האחרונה שהמכשיר היה מסונכרן (יכול להיות null).
+// - שיר/תיקייה חדשים במכשיר: מתווספים.
+// - שינוי שם / תוכן / צבע: אם השתנה במכשיר לעומת base - של המכשיר, אחרת של הענן.
+// - נמחק במכשיר (היה ב-base, לא במכשיר): נמחק. נמחק במכשיר אחר (היה ב-base, לא בענן): לא חוזר.
+// - בלי base: רק מוסיפים את מה שחדש במכשיר, ובהתנגשות הענן קובע.
+window.mergeLibraries = function (cloud, local, base) {
+    const out = JSON.parse(JSON.stringify(cloud));
+    const LANGS = ["he", "en"];
+    const index = (libsObj) => {
+        const m = new Map();
+        const walk = (n) => { if (n.id !== "root") m.set(n.id, n); (n.children || []).forEach(walk); };
+        LANGS.forEach(l => { if (libsObj && libsObj[l]) walk(libsObj[l]); });
+        return m;
+    };
+    const baseIdx = index(base), localIdx = index(local), outIdx = index(out);
+    const FIELDS = ["title", "name", "content", "color", "source"];
+
+    // נמחק במכשיר הזה: היה בבסיס, לא קיים במכשיר
+    if (base) {
+        const prune = (n) => {
+            if (!n.children) return;
+            n.children = n.children.filter(c => !(baseIdx.has(c.id) && !localIdx.has(c.id)));
+            n.children.forEach(prune);
+        };
+        LANGS.forEach(l => prune(out[l]));
+    }
+
+    LANGS.forEach(l => {
+        const visit = (localNode, outParent) => {
+            (localNode.children || []).forEach(child => {
+                let target = outIdx.get(child.id);
+                if (target) {
+                    const b = baseIdx.get(child.id);
+                    if (b) FIELDS.forEach(f => { if (child[f] !== b[f]) target[f] = child[f]; });
+                } else if (base && baseIdx.has(child.id)) {
+                    return; // נמחק בענן (ממכשיר אחר) - לא מחזירים
+                } else {
+                    target = JSON.parse(JSON.stringify(child));
+                    if (target.type === "folder") target.children = [];
+                    outParent.children.push(target);
+                    outIdx.set(child.id, target);
+                }
+                if (child.type === "folder" && target.type === "folder") visit(child, target);
+            });
+        };
+        visit(local[l], out[l]);
+    });
+    return out;
+};
+
 // נקרא בהתנתקות: טוען מחדש את ספריות האורח המקומיות
 window.reloadLibraryFromLocal = function () {
     replaceInPlace(libs.he, readLibraryFromStorage("he"));
@@ -143,8 +224,16 @@ function saveLibrary() {
         lastReadOnlyToast = Date.now();
         showToast("📴 מצב אופליין: השינויים לא יישמרו");
     }
+    // מסמנים שיש שינוי שעוד לא אושר בענן (כדי לא לאבד אותו אם הענן לא זמין כרגע)
+    if (!isReadOnlyOffline() && window.markPendingSync) window.markPendingSync();
     // נשמר בענן רק אם מחוברים והענן אומת (ההגנות בתוך firebase-sync.js)
     if (window.saveLibraryToCloud) window.saveLibraryToCloud();
+}
+
+// פתיחה/סגירה של תיקייה: נשמר רק במכשיר, בלי לשלוח את כל הספרייה לענן
+function saveLocalOnly() {
+    persistLocal();
+    renderLibrary();
 }
 
 // אתחול 10 הצבעים במודאל
@@ -185,7 +274,7 @@ function createTreeElement(node) {
 
     // עיצוב דינמי של צבע התיקייה והרקע שמאחורי הכותרת
     if (node.type === "folder" && node.id !== "root") {
-        const folderColor = node.color || "#3b82f6";
+        const folderColor = node.color || DEFAULT_FOLDER_COLOR;
         itemDiv.style.backgroundColor = hexToRgba(folderColor, 0.12);
         itemDiv.style.borderColor = hexToRgba(folderColor, 0.35);
     }
@@ -244,7 +333,7 @@ function createTreeElement(node) {
         arrow.onclick = (e) => {
             e.stopPropagation();
             node.isExpanded = !node.isExpanded;
-            saveLibrary();
+            saveLocalOnly();
         };
         leftControls.appendChild(arrow);
     } else if (node.type === "file") {
@@ -259,7 +348,8 @@ function createTreeElement(node) {
     iconSpan.className = "item-icon";
     
     if (node.type === "folder") {
-        const folderColor = node.color || "#3b82f6";
+        // התיקייה הראשית תמיד בצבע העיצוב (אי אפשר לשנות לה צבע)
+        const folderColor = node.id === "root" ? DEFAULT_FOLDER_COLOR : (node.color || DEFAULT_FOLDER_COLOR);
         // אייקון וקטורי SVG שמגיב לצבע שנבחר באופן מושלם
         iconSpan.innerHTML = `
             <svg class="folder-svg" viewBox="0 0 24 24" style="fill: ${folderColor}; width: 18px; height: 18px;">
@@ -325,7 +415,7 @@ function createTreeElement(node) {
         if (node.type === "folder") {
             if (node.id !== "root") {
                 node.isExpanded = !node.isExpanded;
-                saveLibrary();
+                saveLocalOnly();
             }
         } else {
             currentSongData = { ...node };
@@ -481,7 +571,7 @@ function createFolder(parentId) {
             id: "folder_" + Date.now(),
             type: "folder",
             name: folderName,
-            color: "#3b82f6",
+            color: DEFAULT_FOLDER_COLOR,
             isExpanded: true,
             children: []
         });
@@ -507,7 +597,8 @@ function deleteItem(id) {
         if (info) {
             info.parent.children = info.parent.children.filter(c => c.id !== id);
             saveLibrary();
-            if (currentSongData && currentSongData.id === id) {
+            // השיר שמוצג נמחק (בעצמו או בתוך תיקייה שנמחקה)
+            if (currentLibNodeId && !findLibNode(currentLibNodeId)) {
                 currentSongData = null;
                 currentLibNodeId = null;
                 updateSaveChangesBtn();
@@ -521,6 +612,18 @@ function deleteItem(id) {
 addFolderBtnRoot.addEventListener("click", () => createFolder("root"));
 
 // חיפוש ושאיבה
+const SCRAPER_URL = "https://chords-scraper.onrender.com";
+
+// השרת החינמי נרדם אחרי כרבע שעה בלי שימוש. מעירים אותו כבר כשהאפליקציה נפתחת / כשנוגעים בתיבת החיפוש
+let lastWakePing = 0;
+function wakeServer() {
+    if (Date.now() - lastWakePing < 5 * 60 * 1000) return;
+    lastWakePing = Date.now();
+    fetch(SCRAPER_URL + "/health").catch(() => {});
+}
+wakeServer();
+searchInput.addEventListener("focus", wakeServer);
+
 searchInput.addEventListener("keypress", (e) => { if (e.key === "Enter") performSearch(); });
 searchBtn.addEventListener("click", performSearch);
 
@@ -536,7 +639,7 @@ async function performSearch() {
     updateSaveChangesBtn();
 
     try {
-        const res = await fetch(`https://chords-scraper.onrender.com/scrape?q=${encodeURIComponent(searchTerm)}`);
+        const res = await fetch(`${SCRAPER_URL}/scrape?q=${encodeURIComponent(searchTerm)}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
@@ -560,15 +663,18 @@ function songLang(song) {
     return /[\u0590-\u05FF]/.test((song.content || "") + " " + (song.title || "")) ? "he" : "en";
 }
 
+let savingSearchedSong = false;
 saveBtn.addEventListener("click", () => {
-    if (!currentSongData) return;
+    if (!currentSongData || savingSearchedSong) return; // לחיצה כפולה לא שומרת פעמיים
+    savingSearchedSong = true;
     const lang = songLang(currentSongData);
-    libs[lang].children.push({...currentSongData});
+    // מזהה חדש וייחודי בכל שמירה (אחרת שני עותקים עם אותו מזהה נמחקים יחד)
+    libs[lang].children.push({ ...currentSongData, id: "song_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7) });
     saveLibrary();
     if (lang !== activeLang) switchLibrary(lang, true);
     const where = lang === "he" ? "הספרייה העברית" : "הספרייה האנגלית";
     saveBtn.innerText = "✅ נשמר ב" + where + "!";
-    setTimeout(() => { saveBtn.innerText = "💾 שמור שיר לראשי"; saveBtn.classList.add("hidden"); }, 2500);
+    setTimeout(() => { saveBtn.innerText = "💾 שמור שיר לראשי"; saveBtn.classList.add("hidden"); savingSearchedSong = false; }, 2500);
 });
 
 function displayCurrentSong() {
@@ -838,6 +944,7 @@ function updateOfflineBanner() {
     if (icon) icon.classList.toggle("hidden", b.classList.contains("hidden"));
 }
 window.onAccountChange = updateOfflineBanner;
+window.activeOfflineCopyEmail = function () { const c = activeCopy(); return c ? c.email : null; };
 
 function activateCopyData(copy) {
     localStorage.setItem(GUEST_LIB_KEY, JSON.stringify(copy.he));
@@ -970,6 +1077,11 @@ function closeMobileDrawer() {
 if (menuToggleBtn) menuToggleBtn.addEventListener("click", openMobileDrawer);
 if (closeSidebarBtn) closeSidebarBtn.addEventListener("click", closeMobileDrawer);
 if (drawerOverlay) drawerOverlay.addEventListener("click", closeMobileDrawer);
+
+// התקנה כאפליקציה מכרום ("הוסף למסך הבית") ועבודה בלי אינטרנט. לא בתוך אפליקציית ה-APK
+if ("serviceWorker" in navigator && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
 
 // סגירת המגירה בנייד כשבוחרים שיר
 const originalDisplaySong = displayCurrentSong;
