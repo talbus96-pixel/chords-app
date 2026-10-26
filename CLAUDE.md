@@ -57,8 +57,9 @@ repo root (= website):
                        gstatic firebasejs + Google Fonts. Bump CACHE ("chords-vN") when
                        changing it. Each file is cached separately (a 404 must not break install).
   manifest.webmanifest (app name: "Shiron", also in <title> and headers), icons/icon-192.png, icons/icon-512.png
-  icons/source/logo.svg      <- current logo (green "C" + gold note on cream, chosen option "4A")
-  icons/alt-option-3/        <- owner's second choice (guitar in gold ring), kept in case they switch
+  icons/source/logo.svg      <- current logo: cream guitar in a gold ring on mocha brown (#6b5639);
+                                icon PNGs are rendered from it (playwright screenshot at 192/512)
+  icons/alt-option-3/        <- owner's second choice, kept aside: the same guitar on Irish green
   CLAUDE.md (this file)
 
 Other repo: talbus96-pixel/chords-scraper (private) -> scraper.js, deployed by Render.com
