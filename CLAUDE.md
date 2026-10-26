@@ -46,7 +46,9 @@ repo root (= website):
   sw.js             <- service worker: network-first for own files, cache-first for
                        gstatic firebasejs + Google Fonts. Bump CACHE ("chords-vN") when
                        changing it. Each file is cached separately (a 404 must not break install).
-  manifest.webmanifest, icons/icon-192.png, icons/icon-512.png
+  manifest.webmanifest (installed name: "ChordsApp"), icons/icon-192.png, icons/icon-512.png
+  icons/source/logo.svg      <- current logo (green "C" + gold note on cream, chosen option "4A")
+  icons/alt-option-3/        <- owner's second choice (guitar in gold ring), kept in case they switch
   CLAUDE.md (this file)
 
 Other repo: talbus96-pixel/chords-scraper (private) -> scraper.js, deployed by Render.com
@@ -68,20 +70,25 @@ Firebase project "chordsapp-e4a85": Auth (Google) + Firestore.
 
 Library tree: `{ id, type: "folder"|"file", name (folder) / title (song), color, isExpanded,
 content, source, children: [...] }`. Root `id: "root"`. Two libraries `libs.he`, `libs.en`;
-`myLibrary` = active one (`activeLang`, localStorage `activeLibLang`). Song language =
+`myLibrary` = active one (`activeLang`, localStorage `activeLibLang`). Songs may have `transpose`
+(semitones, -11..11): `content` always stays the ORIGINAL text, the display applies `transpose`.
+Set lists = third pseudo-library `libs.sl`: root whose children are
+`{ id, type: "setlist", name, songIds: [...] }` (ids of songs in he/en; deleted songs are skipped).
+Song language =
 Hebrew-letter regex on title+content (`songLang`). Folder colors: `PRESET_COLORS` (Irish
 palette), `DEFAULT_FOLDER_COLOR` = `#1f6b3a`.
 
 localStorage (per origin):
-- `chordLibraryData` / `_en` — guest libraries = the active offline copy.
-- `chordLibraryData_<uid>` / `_en` — local mirror of the logged-in user.
+- `chordLibraryData` / `_en` / `_sl` — guest libraries + set lists = the active offline copy.
+- `chordLibraryData_<uid>` / `_en` / `_sl` — local mirror of the logged-in user.
 - `offlineCopies` (max 5), `offlineActiveId` (set + not logged in => read-only mode).
 - `pendingSync_<uid>` — timestamp of a local change not yet acknowledged by the cloud.
 - `cloudBase_<uid>` — last library known to be in the cloud (base for 3-way merge).
-- `songFontSize`, `activeLibLang`.
+- `songFontSize`, `activeLibLang`, `scrollSpeed` (1-10), `colorChords` / `nightMode` ("1"/"0").
 
 Firestore: `users_libraries/<uid>` with `libraryData` (he), `libraryDataEn` (en),
-`lastUpdated`. Rules: read/write only if `request.auth.uid == userId`.
+`setLists` (sl, added Oct 2026; a doc without it is filled from the local mirror and rewritten),
+`lastUpdated`. `mergeLibraries` merges he/en/sl; FIELDS include `transpose` and `songIds`. Rules: read/write only if `request.auth.uid == userId`.
 
 ## 4. Cloud sync rules (do not break)
 
@@ -102,7 +109,10 @@ Firestore: `users_libraries/<uid>` with `libraryData` (he), `libraryDataEn` (en)
 
 ## 5. Search / scraper (repo chords-scraper)
 
-- `GET /scrape?q=...[&source=echords|tab4u]` -> `{title, source, content}`; `GET /health`.
+- `GET /scrape?q=...[&source=echords|tab4u]` -> `{title, source, url, content, results}` where
+  `results` = up to 5 `{title, source, url}` (chosen song first); the app shows them under
+  "לא השיר הנכון?". `GET /song?url=...` fetches one chosen Tab4U / E-Chords page (other hosts
+  rejected, same browser fallback + cache). `GET /health`.
 - Hebrew -> Tab4U. Other -> Tab4U "quick" (plain HTTP, only if all words match), then E-Chords,
   then Tab4U. Tab4U: plain HTTP + cheerio (`resultsSimple?tab=songs&q=`, links
   `tabs/songs/...`, best word match, content from `#songContentTPL` table rows), Puppeteer
@@ -122,10 +132,16 @@ with stub modules for app / auth (`onAuthStateChanged`, a `__login(user)` helper
 offline edits, first-run rescue, no cross-account copy, folder toggle = no write, `#syncError`.
 `mergeLibraries` can be unit-tested in Node by extracting it from `app.js`.
 
-## 7. Ideas list (none started without approval)
+## 7. Features and ideas
 
-Proposed to the owner: pick from 5 search results instead of the first; search inside the
-library; keep the screen awake while a song is open; auto-scroll; colored chords; night/stage
-mode; tap a chord to see its diagram; store transposition as a setting (keep the original);
-manual song editing; set lists; export backup file; share a song.
-Known: Tab4U sometimes picks the wrong song for vague queries (motivation for the results list).
+Built (approved Oct 2026): pick from up to 5 search results; search inside the library (title or
+lyrics, both libraries); screen stays awake while a song is open (Wake Lock); auto-scroll with
+speed 1-10; colored chords (toggle); night mode (toggle, `body.night` overrides the theme
+variables); transposition stored per song (`transpose`, original kept, "↺" resets); manual song
+editing (title + original text); set lists (🎤 in the sidebar, "הוסף לרשימת הופעה" in a song's ⋮
+menu, prev/next bar while playing); backup to a JSON file + restore (restore only ADDS what is
+missing, via `mergeLibraries(current, backup, null)`).
+
+Not wanted: chord diagrams. Postponed (owner unsure): share a song. Owner may rename the app.
+Known: in Hebrew (RTL) songs a chord ending in "#" at the end of a chord line shows as "#F"
+(pre-existing bidi issue, not fixed yet).

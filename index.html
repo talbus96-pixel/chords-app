@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-signin-client_id" content="678717011887-3gh7chfl1fc8j3d10g0fma01h4qltnfb.apps.googleusercontent.com">
-    <title>ספריית אקורדים מקומית</title>
+    <title>ChordsApp</title>
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#1f6b3a">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,6 +29,11 @@
             <div class="offline-row">
                 <button id="downloadOfflineBtn" class="hidden" disabled>📥 הורד לשימוש אופליין</button>
                 <button id="manageOfflineBtn">🗂️ עותקי אופליין</button>
+            </div>
+            <div class="offline-row">
+                <button id="exportBackupBtn">💾 גיבוי לקובץ</button>
+                <button id="importBackupBtn">📂 שחזור מגיבוי</button>
+                <input type="file" id="importBackupInput" accept=".json,application/json" class="hidden">
             </div>
             <div id="offlineBanner" class="offline-banner hidden"></div>
             <div id="syncError" class="sync-error hidden"></div>
@@ -56,8 +61,13 @@
             </div>
             <div class="sidebar-actions">
                 <button id="addFolderBtnRoot">➕ תיקייה חדשה</button>
+                <button id="openSetlistsBtn">🎤 רשימות הופעה</button>
             </div>
-            
+            <div class="lib-search">
+                <input type="search" id="libSearchInput" placeholder="🔍 חפש בספרייה (שם או מילים)...">
+            </div>
+            <div id="libSearchResults" class="lib-search-results hidden"></div>
+
             <div id="libraryContainer"></div>
 
             <div id="rootDropZone" class="root-drop-zone">
@@ -76,8 +86,11 @@
                 </div>
 
                 <div class="controls">
-                    <button id="transposeUp">העלה חצי טון (+)</button>
-                    <button id="transposeDown">הורד חצי טון (-)</button>
+                    <div class="transpose-group">
+                        <button id="transposeDown" title="הורד חצי טון">− ½ טון</button>
+                        <button id="transposeLabel" title="חזרה לטון המקורי">טון מקורי</button>
+                        <button id="transposeUp" title="העלה חצי טון">+ ½ טון</button>
+                    </div>
                     <div class="font-size-group">
                         <button id="fontSmallerBtn" title="הקטן גופן">A−</button>
                         <span id="fontSizeLabel"></span>
@@ -87,7 +100,26 @@
                     <button id="saveChangesBtn" class="hidden">💾 שמור שינויים בשיר</button>
                 </div>
 
+                <div class="tools-row">
+                    <button id="autoScrollBtn">▶ גלילה</button>
+                    <div class="speed-group">
+                        <button id="scrollSlowerBtn" title="לאט יותר">🐢</button>
+                        <span id="scrollSpeedLabel"></span>
+                        <button id="scrollFasterBtn" title="מהר יותר">🐇</button>
+                    </div>
+                    <button id="editSongBtn">✏️ עריכה</button>
+                    <button id="colorChordsBtn">🎨 אקורדים</button>
+                    <button id="nightModeBtn">🌙 לילה</button>
+                </div>
+
                 <div id="sourceInfo" class="hidden"></div>
+                <div id="searchResults" class="search-results hidden"></div>
+                <div id="setlistBar" class="setlist-bar hidden">
+                    <button id="setlistPrevBtn">→ הקודם</button>
+                    <span id="setlistPos"></span>
+                    <button id="setlistNextBtn">הבא ←</button>
+                    <button id="setlistExitBtn" title="יציאה מהרשימה">✕</button>
+                </div>
                 
                 <div id="songDisplayWrapper">
                     <div id="songDisplay">
@@ -127,6 +159,29 @@
             <h3>עותקי אופליין</h3>
             <div id="offlineList" class="move-folder-list"></div>
             <button id="closeOfflineBtn">סגור</button>
+        </div>
+    </div>
+
+    <!-- מודאל עריכת שיר -->
+    <div id="editModal" class="modal-overlay hidden">
+        <div class="color-palette-card edit-card">
+            <h3>עריכת שיר</h3>
+            <input type="text" id="editTitleInput" dir="auto" placeholder="שם השיר">
+            <div class="edit-hint">הטקסט המקורי (לפני שינוי טון). שורת אקורדים = שורה שיש בה רק אקורדים.</div>
+            <textarea id="editContentInput" dir="auto" spellcheck="false"></textarea>
+            <div class="modal-btns">
+                <button id="editSaveBtn" class="primary">💾 שמור</button>
+                <button id="editCancelBtn">ביטול</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודאל רשימות הופעה -->
+    <div id="setlistModal" class="modal-overlay hidden">
+        <div class="color-palette-card move-card">
+            <h3 id="setlistModalTitle">רשימות הופעה</h3>
+            <div id="setlistModalBody" class="move-folder-list"></div>
+            <div class="modal-btns" id="setlistModalBtns"></div>
         </div>
     </div>
 

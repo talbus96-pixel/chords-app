@@ -51,8 +51,10 @@ function hexToRgba(hex, alpha = 0.15) {
 const GUEST_LIB_KEY = "chordLibraryData";
 window.libraryStorageKey = GUEST_LIB_KEY;
 
+// lang: "he" / "en" = ספריות השירים, "sl" = רשימות ההופעה (ילדים מסוג setlist עם songIds)
 function emptyLibrary(lang) {
-    return { id: "root", type: "folder", name: lang === "en" ? "My Library" : "הספרייה שלי", color: DEFAULT_FOLDER_COLOR, isExpanded: true, children: [] };
+    const name = lang === "en" ? "My Library" : lang === "sl" ? "רשימות הופעה" : "הספרייה שלי";
+    return { id: "root", type: "folder", name, color: DEFAULT_FOLDER_COLOR, isExpanded: true, children: [] };
 }
 
 function parseLibrary(raw, lang) {
@@ -67,7 +69,7 @@ function parseLibrary(raw, lang) {
     return data;
 }
 
-function storageKeyFor(base, lang) { return base + (lang === "en" ? "_en" : ""); }
+function storageKeyFor(base, lang) { return base + (lang === "en" ? "_en" : lang === "sl" ? "_sl" : ""); }
 
 function readLibraryFromStorage(lang, base) {
     let raw = null;
@@ -75,7 +77,7 @@ function readLibraryFromStorage(lang, base) {
     return parseLibrary(raw, lang);
 }
 
-const libs = { he: readLibraryFromStorage("he"), en: readLibraryFromStorage("en") };
+const libs = { he: readLibraryFromStorage("he"), en: readLibraryFromStorage("en"), sl: readLibraryFromStorage("sl") };
 let activeLang = "he";
 try { if (localStorage.getItem("activeLibLang") === "en") activeLang = "en"; } catch (e) {}
 let myLibrary = libs[activeLang]; // הספרייה הפעילה כרגע (כל הפונקציות למטה עובדות עליה)
@@ -100,6 +102,7 @@ function persistLocal() {
     try {
         localStorage.setItem(storageKeyFor(window.libraryStorageKey, "he"), JSON.stringify(libs.he));
         localStorage.setItem(storageKeyFor(window.libraryStorageKey, "en"), JSON.stringify(libs.en));
+        localStorage.setItem(storageKeyFor(window.libraryStorageKey, "sl"), JSON.stringify(libs.sl));
         return true;
     } catch (e) {
         // הזיכרון של הדפדפן/האפליקציה מלא: לא שותקים, מודיעים
@@ -113,45 +116,49 @@ function persistLocal() {
 
 // --- פונקציות שקוד הענן (firebase-sync.js) משתמש בהן ---
 window.getLibrariesForCloud = function () {
-    return JSON.parse(JSON.stringify({ he: libs.he, en: libs.en }));
+    return JSON.parse(JSON.stringify({ he: libs.he, en: libs.en, sl: libs.sl }));
 };
 
 window.readGuestLibraries = function () {
-    if (localStorage.getItem("offlineActiveId")) return { he: null, en: null };
-    return { he: readLibraryFromStorage("he", GUEST_LIB_KEY), en: readLibraryFromStorage("en", GUEST_LIB_KEY) };
+    if (localStorage.getItem("offlineActiveId")) return { he: null, en: null, sl: null };
+    return { he: readLibraryFromStorage("he", GUEST_LIB_KEY), en: readLibraryFromStorage("en", GUEST_LIB_KEY), sl: readLibraryFromStorage("sl", GUEST_LIB_KEY) };
 };
 
 // נקרא כשהענן שלח נתונים. מחליף את הספריות בזיכרון (בלי לכתוב חזרה לענן).
-// he / en יכולים להיות null אם הענן לא שלח אותם - אז הספרייה המקומית נשארת כמו שהיא.
-window.applyLibrariesFromCloud = function (he, en) {
+// he / en / sl יכולים להיות null אם הענן לא שלח אותם - אז הספרייה המקומית נשארת כמו שהיא.
+window.applyLibrariesFromCloud = function (he, en, sl) {
     if (he) replaceInPlace(libs.he, he);
     if (en) replaceInPlace(libs.en, en);
+    if (sl) replaceInPlace(libs.sl, sl);
     persistLocal(); // נשמר תחת מפתח המשתמש בלבד. עותק האופליין (ספריית האורח) מתעדכן רק בכפתור ההורדה
     renderLibrary();
     updateOfflineBanner();
+    refreshSetlistViews();
 };
 
 // הספריות השמורות במכשיר תחת המפתח הנוכחי (של המשתמש המחובר)
 window.readUserLibraries = function () {
-    return { he: readLibraryFromStorage("he"), en: readLibraryFromStorage("en") };
+    return { he: readLibraryFromStorage("he"), en: readLibraryFromStorage("en"), sl: readLibraryFromStorage("sl") };
 };
 
-window.emptyLibraries = function () { return { he: emptyLibrary("he"), en: emptyLibrary("en") }; };
+window.emptyLibraries = function () { return { he: emptyLibrary("he"), en: emptyLibrary("en"), sl: emptyLibrary("sl") }; };
 
 // נקרא מיד כשמשתמש מתחבר, לפני שהענן עונה: מציג את מה שנשמר במכשיר למשתמש הזה.
 // (בלי זה הוצגה ספריית האורח / עותק האופליין, ושינויים שנשמרו בטלפון "חזרו למקור" עד שהענן ענה)
 // אם אין במכשיר כלום למשתמש: עותק האופליין רק אם הוא של אותו חשבון, אחרת ספרייה ריקה עד שהענן יענה
 window.loadUserLibrariesForStart = function (email) {
-    let he = readLibraryFromStorage("he"), en = readLibraryFromStorage("en");
+    let he = readLibraryFromStorage("he"), en = readLibraryFromStorage("en"), sl = readLibraryFromStorage("sl");
     if (he.children.length === 0 && en.children.length === 0) {
         const c = activeCopy();
         if (c && c.email && c.email === email) {
             he = parseLibrary(JSON.stringify(c.he), "he");
             en = parseLibrary(JSON.stringify(c.en), "en");
+            if (sl.children.length === 0) sl = parseLibrary(JSON.stringify(c.sl || null), "sl");
         }
     }
     replaceInPlace(libs.he, he);
     replaceInPlace(libs.en, en);
+    replaceInPlace(libs.sl, sl);
     renderLibrary();
     updateOfflineBanner();
     updateSaveChangesBtn();
@@ -163,9 +170,10 @@ window.loadUserLibrariesForStart = function (email) {
 // - שינוי שם / תוכן / צבע: אם השתנה במכשיר לעומת base - של המכשיר, אחרת של הענן.
 // - נמחק במכשיר (היה ב-base, לא במכשיר): נמחק. נמחק במכשיר אחר (היה ב-base, לא בענן): לא חוזר.
 // - בלי base: רק מוסיפים את מה שחדש במכשיר, ובהתנגשות הענן קובע.
+// "sl" = רשימות ההופעה, ממוזגות באותה דרך (יכולות להיות חסרות במסמך ישן)
 window.mergeLibraries = function (cloud, local, base) {
     const out = JSON.parse(JSON.stringify(cloud));
-    const LANGS = ["he", "en"];
+    const LANGS = ["he", "en", "sl"];
     const index = (libsObj) => {
         const m = new Map();
         const walk = (n) => { if (n.id !== "root") m.set(n.id, n); (n.children || []).forEach(walk); };
@@ -173,7 +181,8 @@ window.mergeLibraries = function (cloud, local, base) {
         return m;
     };
     const baseIdx = index(base), localIdx = index(local), outIdx = index(out);
-    const FIELDS = ["title", "name", "content", "color", "source"];
+    const FIELDS = ["title", "name", "content", "color", "source", "transpose", "songIds"];
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
     // נמחק במכשיר הזה: היה בבסיס, לא קיים במכשיר
     if (base) {
@@ -182,7 +191,7 @@ window.mergeLibraries = function (cloud, local, base) {
             n.children = n.children.filter(c => !(baseIdx.has(c.id) && !localIdx.has(c.id)));
             n.children.forEach(prune);
         };
-        LANGS.forEach(l => prune(out[l]));
+        LANGS.forEach(l => { if (out[l]) prune(out[l]); });
     }
 
     LANGS.forEach(l => {
@@ -191,7 +200,7 @@ window.mergeLibraries = function (cloud, local, base) {
                 let target = outIdx.get(child.id);
                 if (target) {
                     const b = baseIdx.get(child.id);
-                    if (b) FIELDS.forEach(f => { if (child[f] !== b[f]) target[f] = child[f]; });
+                    if (b) FIELDS.forEach(f => { if (!same(child[f], b[f])) target[f] = JSON.parse(JSON.stringify(child[f] === undefined ? null : child[f])); });
                 } else if (base && baseIdx.has(child.id)) {
                     return; // נמחק בענן (ממכשיר אחר) - לא מחזירים
                 } else {
@@ -203,6 +212,8 @@ window.mergeLibraries = function (cloud, local, base) {
                 if (child.type === "folder" && target.type === "folder") visit(child, target);
             });
         };
+        if (!local || !local[l]) return;
+        if (!out[l]) { out[l] = JSON.parse(JSON.stringify(local[l])); return; }
         visit(local[l], out[l]);
     });
     return out;
@@ -212,8 +223,10 @@ window.mergeLibraries = function (cloud, local, base) {
 window.reloadLibraryFromLocal = function () {
     replaceInPlace(libs.he, readLibraryFromStorage("he"));
     replaceInPlace(libs.en, readLibraryFromStorage("en"));
+    replaceInPlace(libs.sl, readLibraryFromStorage("sl"));
     renderLibrary();
     updateOfflineBanner();
+    refreshSetlistViews();
 };
 
 let lastReadOnlyToast = 0;
@@ -228,6 +241,7 @@ function saveLibrary() {
     if (!isReadOnlyOffline() && window.markPendingSync) window.markPendingSync();
     // נשמר בענן רק אם מחוברים והענן אומת (ההגנות בתוך firebase-sync.js)
     if (window.saveLibraryToCloud) window.saveLibraryToCloud();
+    refreshSetlistViews();
 }
 
 // פתיחה/סגירה של תיקייה: נשמר רק במכשיר, בלי לשלוח את כל הספרייה לענן
@@ -418,11 +432,8 @@ function createTreeElement(node) {
                 saveLocalOnly();
             }
         } else {
-            currentSongData = { ...node };
-            currentLibNodeId = node.id;
-            displayCurrentSong();
-            saveBtn.classList.add("hidden");
-            updateSaveChangesBtn();
+            exitSetlistPlay();
+            openLibrarySong(node);
         }
     });
 
@@ -483,6 +494,7 @@ function openContextMenu(x, y, node) {
         contextMenuList.innerHTML = `
             <li onclick="renameItem('${node.id}')">✏️ שנה שם שיר</li>
             <li onclick="duplicateSong('${node.id}')">📋 שכפל שיר</li>
+            <li onclick="openAddToSetlist('${node.id}')">🎤 הוסף לרשימת הופעה...</li>
             <li onclick="openMoveModal('${node.id}')">📂 העבר לתיקייה...</li>
             <li onclick="moveItem('${node.id}', 'root')">📤 העבר לתיקייה הראשית</li>
             <li onclick="moveToOtherLibrary('${node.id}')">🔁 ${otherLibLabel}</li>
@@ -602,6 +614,8 @@ function deleteItem(id) {
                 currentSongData = null;
                 currentLibNodeId = null;
                 updateSaveChangesBtn();
+                stopAutoScroll();
+                updateWakeLock();
                 songDisplay.innerText = "חפש שיר כדי לשאוב אותו, או בחר שיר מעץ התיקיות...";
                 sourceInfo.classList.add("hidden");
             }
@@ -632,29 +646,92 @@ async function performSearch() {
     if (!searchTerm) return;
 
     songDisplay.innerText = "⏳ מחפש את השיר... (אם השרת היה רדום זה יכול לקחת עד דקה)";
-    sourceInfo.classList.add("hidden");
-    saveBtn.classList.add("hidden");
-    currentSongData = null;
-    currentLibNodeId = null;
-    updateSaveChangesBtn();
+    clearSongView();
+    searchResultsList = [];
+    renderSearchResults();
 
     try {
         const res = await fetch(`${SCRAPER_URL}/scrape?q=${encodeURIComponent(searchTerm)}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
-
-        currentSongData = {
-            id: "song_" + Date.now(),
-            type: "file",
-            title: data.title || searchTerm,
-            source: data.source || 'Tab4U',
-            content: data.content
-        };
-
-        displayCurrentSong();
-        saveBtn.classList.remove("hidden");
+        showSearchedSong(data, searchTerm);
+        searchResultsList = Array.isArray(data.results) ? data.results : [];
+        renderSearchResults(data.url);
     } catch (err) {
         songDisplay.innerText = `❌ לא הצלחתי לשאוב: ${err.message}\n\nנסה שוב בעוד רגע, או נסה לנסח את החיפוש אחרת (למשל: שם שיר + שם אמן).`;
+    }
+}
+
+// מנקה את אזור השיר לפני חיפוש / כשאין שיר
+function clearSongView() {
+    sourceInfo.classList.add("hidden");
+    saveBtn.classList.add("hidden");
+    currentSongData = null;
+    currentLibNodeId = null;
+    exitSetlistPlay();
+    stopAutoScroll();
+    updateSaveChangesBtn();
+    updateWakeLock();
+}
+
+function showSearchedSong(data, fallbackTitle) {
+    currentSongData = {
+        id: "song_" + Date.now(),
+        type: "file",
+        title: data.title || fallbackTitle,
+        source: data.source || 'Tab4U',
+        content: data.content,
+        transpose: 0
+    };
+    currentLibNodeId = null;
+    displayCurrentSong();
+    scrollSongToTop();
+    saveBtn.classList.remove("hidden");
+    updateSaveChangesBtn();
+}
+
+// ===== בחירה מתוך עד 5 תוצאות חיפוש =====
+const searchResultsEl = document.getElementById("searchResults");
+let searchResultsList = [];
+let searchResultsOpen = false;
+
+function renderSearchResults(currentUrl) {
+    searchResultsEl.innerHTML = "";
+    if (searchResultsList.length < 2) { searchResultsEl.classList.add("hidden"); return; }
+    if (currentUrl !== undefined) { searchResultsEl.dataset.current = currentUrl || ""; searchResultsOpen = false; }
+    const cur = searchResultsEl.dataset.current;
+    const toggle = document.createElement("button");
+    toggle.className = "results-toggle";
+    toggle.innerText = searchResultsOpen ? "▲ הסתר תוצאות" : "🔎 לא השיר הנכון? בחר מתוך " + searchResultsList.length + " תוצאות";
+    toggle.onclick = () => { searchResultsOpen = !searchResultsOpen; renderSearchResults(); };
+    searchResultsEl.appendChild(toggle);
+    if (searchResultsOpen) {
+        searchResultsList.forEach(r => {
+            const b = document.createElement("button");
+            b.className = "result-item" + (r.url === cur ? " current" : "");
+            b.dir = "auto";
+            b.innerText = (r.url === cur ? "✓ " : "") + r.title + "  ·  " + r.source;
+            b.onclick = () => pickSearchResult(r);
+            searchResultsEl.appendChild(b);
+        });
+    }
+    searchResultsEl.classList.remove("hidden");
+}
+
+async function pickSearchResult(r) {
+    if (r.url === searchResultsEl.dataset.current) { searchResultsOpen = false; renderSearchResults(); return; }
+    clearSongView();
+    searchResultsOpen = false;
+    renderSearchResults();
+    songDisplay.innerText = "⏳ טוען את " + r.title + "...";
+    try {
+        const res = await fetch(`${SCRAPER_URL}/song?url=${encodeURIComponent(r.url)}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        showSearchedSong({ ...data, title: data.title || r.title }, r.title);
+        renderSearchResults(r.url);
+    } catch (err) {
+        songDisplay.innerText = `❌ לא הצלחתי לטעון את השיר: ${err.message}\n\nנסה שוב, או בחר תוצאה אחרת.`;
     }
 }
 
@@ -677,15 +754,47 @@ saveBtn.addEventListener("click", () => {
     setTimeout(() => { saveBtn.innerText = "💾 שמור שיר לראשי"; saveBtn.classList.add("hidden"); savingSearchedSong = false; }, 2500);
 });
 
+function escapeHtml(t) {
+    return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// הטקסט המוצג: המקור אחרי שינוי הטון השמור בשיר. האקורדים עטופים כדי שאפשר יהיה לצבוע אותם
+function songHtml(content, steps) {
+    const text = steps ? transposeText(content, steps) : content;
+    return text.split("\n").map(line => isChordLine(line)
+        ? line.replace(/\S+/g, tok => CHORD_RE.test(tok) ? '<span class="chord">' + escapeHtml(tok) + '</span>' : escapeHtml(tok))
+        : escapeHtml(line)).join("\n");
+}
+
 function displayCurrentSong() {
     if (!currentSongData) return;
     sourceInfo.innerText = `מקור: נשאב מ-${currentSongData.source}`;
     sourceInfo.classList.remove("hidden");
-    songDisplay.innerText = currentSongData.content;
+    songDisplay.innerHTML = songHtml(currentSongData.content || "", currentSongData.transpose || 0);
     // שירים בעברית מיושרים לימין, שירים באנגלית לשמאל (אחרת האקורדים לא מתיישרים מעל המילים)
     const isHebrew = /[\u0590-\u05FF]/.test(currentSongData.content);
     songDisplay.style.direction = isHebrew ? "rtl" : "ltr";
     songDisplay.style.textAlign = isHebrew ? "right" : "left";
+    updateTransposeLabel();
+    updateWakeLock();
+}
+
+// פתיחת שיר מהספרייה (מהעץ, מהחיפוש בספרייה או מרשימת הופעה)
+function openLibrarySong(node) {
+    currentSongData = { ...node, transpose: node.transpose || 0 };
+    currentLibNodeId = node.id;
+    searchResultsList = [];
+    renderSearchResults();
+    stopAutoScroll();
+    displayCurrentSong();
+    scrollSongToTop();
+    saveBtn.classList.add("hidden");
+    updateSaveChangesBtn();
+}
+
+function scrollSongToTop() {
+    const sc = document.querySelector(".main-content");
+    if (sc) sc.scrollTop = 0;
 }
 
 // טרנספוזיציה
@@ -745,18 +854,29 @@ function transposeText(text, steps) {
     return text.split("\n").map(line => isChordLine(line) ? transposeLine(line, steps) : line).join("\n");
 }
 
-document.getElementById("transposeUp").addEventListener("click", () => {
-    if (!currentSongData) return;
-    currentSongData.content = transposeText(currentSongData.content, 1);
-    displayCurrentSong();
-    updateSaveChangesBtn();
-});
+// שינוי הטון נשמר כהגדרה של השיר (transpose = מספר חצאי טונים). הטקסט המקורי לא משתנה
+const transposeLabel = document.getElementById("transposeLabel");
+function updateTransposeLabel() {
+    const t = (currentSongData && currentSongData.transpose) || 0;
+    transposeLabel.innerText = t === 0 ? "טון מקורי" : "↺ " + (t > 0 ? "+" : "") + t;
+    transposeLabel.title = t === 0 ? "הטון המקורי" : "חזרה לטון המקורי";
+    transposeLabel.classList.toggle("changed", t !== 0);
+}
 
-document.getElementById("transposeDown").addEventListener("click", () => {
+function changeTranspose(delta) {
     if (!currentSongData) return;
-    currentSongData.content = transposeText(currentSongData.content, -1);
+    let t = (currentSongData.transpose || 0) + delta;
+    if (t > 11 || t < -11) t = 0; // סיבוב שלם = הטון המקורי
+    currentSongData.transpose = t;
     displayCurrentSong();
     updateSaveChangesBtn();
+}
+
+document.getElementById("transposeUp").addEventListener("click", () => changeTranspose(1));
+document.getElementById("transposeDown").addEventListener("click", () => changeTranspose(-1));
+transposeLabel.addEventListener("click", () => {
+    if (!currentSongData || !currentSongData.transpose) return;
+    changeTranspose(-currentSongData.transpose);
 });
 
 // גודל גופן של השיר – נשמר במכשיר כדי שיישאר גם אחרי סגירת האפליקציה
@@ -896,7 +1016,8 @@ function findLibNode(id) {
 
 function updateSaveChangesBtn() {
     const node = currentLibNodeId && findLibNode(currentLibNodeId);
-    const show = !!(node && currentSongData && currentSongData.id === currentLibNodeId && node.content !== currentSongData.content);
+    const show = !!(node && currentSongData && currentSongData.id === currentLibNodeId &&
+        (node.content !== currentSongData.content || (node.transpose || 0) !== (currentSongData.transpose || 0)));
     saveChangesBtn.classList.toggle("hidden", !show);
 }
 
@@ -904,6 +1025,7 @@ saveChangesBtn.addEventListener("click", () => {
     const node = currentLibNodeId && findLibNode(currentLibNodeId);
     if (!node || !currentSongData) return;
     node.content = currentSongData.content;
+    node.transpose = currentSongData.transpose || 0;
     saveLibrary();
     updateSaveChangesBtn();
     if (!isReadOnlyOffline()) showToast("✅ השינויים נשמרו בשיר");
@@ -949,6 +1071,7 @@ window.activeOfflineCopyEmail = function () { const c = activeCopy(); return c ?
 function activateCopyData(copy) {
     localStorage.setItem(GUEST_LIB_KEY, JSON.stringify(copy.he));
     localStorage.setItem(GUEST_LIB_KEY + "_en", JSON.stringify(copy.en));
+    localStorage.setItem(GUEST_LIB_KEY + "_sl", JSON.stringify(copy.sl || emptyLibrary("sl")));
     localStorage.setItem("offlineActiveId", copy.id);
 }
 
@@ -969,7 +1092,7 @@ function saveOfflineCopy() {
         if (!confirm("יש כבר " + OFFLINE_MAX + " עותקים. העותק הישן ביותר (" + victim.email + ", " + fmtDate(victim.savedAt) + ") יימחק. להמשיך?")) return;
         copies = copies.filter(c => c.id !== victim.id);
     }
-    const copy = { id: "copy_" + Date.now(), email: acc.email, savedAt: new Date().toISOString(), songs: songs, he: data.he, en: data.en };
+    const copy = { id: "copy_" + Date.now(), email: acc.email, savedAt: new Date().toISOString(), songs: songs, he: data.he, en: data.en, sl: data.sl };
     copies.push(copy);
     try {
         writeCopies(copies);
@@ -989,7 +1112,9 @@ function activateCopy(id) {
     if (window.libraryStorageKey === GUEST_LIB_KEY) {
         replaceInPlace(libs.he, JSON.parse(JSON.stringify(c.he)));
         replaceInPlace(libs.en, JSON.parse(JSON.stringify(c.en)));
+        replaceInPlace(libs.sl, parseLibrary(JSON.stringify(c.sl || null), "sl"));
         renderLibrary();
+        refreshSetlistViews();
         showToast("העותק הופעל");
     } else {
         showToast("העותק הוגדר כעותק האופליין. יוצג כשתתנתק או כשאין אינטרנט.");
@@ -1077,6 +1202,388 @@ function closeMobileDrawer() {
 if (menuToggleBtn) menuToggleBtn.addEventListener("click", openMobileDrawer);
 if (closeSidebarBtn) closeSidebarBtn.addEventListener("click", closeMobileDrawer);
 if (drawerOverlay) drawerOverlay.addEventListener("click", closeMobileDrawer);
+
+// ===== חיפוש בתוך הספרייה (שתי הספריות, לפי שם השיר או מילים מתוכו) =====
+const libSearchInput = document.getElementById("libSearchInput");
+const libSearchResults = document.getElementById("libSearchResults");
+
+function normSearch(t) { return String(t || "").toLowerCase().replace(/\s+/g, " ").trim(); }
+
+function renderLibSearch() {
+    const q = normSearch(libSearchInput.value);
+    libraryContainer.classList.toggle("hidden", !!q);
+    libSearchResults.classList.toggle("hidden", !q);
+    if (!q) return;
+    const byTitle = [], byContent = [];
+    ["he", "en"].forEach(lang => {
+        const walk = (n, path) => {
+            if (n.type === "file") {
+                if (normSearch(n.title).includes(q)) byTitle.push({ n, path });
+                else if (normSearch(n.content).includes(q)) byContent.push({ n, path });
+                return;
+            }
+            const p = n.id === "root" ? [lang === "he" ? "עברית" : "English"] : path.concat(n.name);
+            (n.children || []).forEach(c => walk(c, p));
+        };
+        walk(libs[lang], []);
+    });
+    const all = byTitle.concat(byContent);
+    libSearchResults.innerHTML = "";
+    if (all.length === 0) { libSearchResults.innerText = "לא נמצאו שירים"; return; }
+    all.forEach(({ n, path }) => {
+        const b = document.createElement("button");
+        b.className = "lib-search-item";
+        const t = document.createElement("div");
+        t.dir = "auto";
+        t.innerText = "🎵 " + (n.title || "");
+        const where = document.createElement("div");
+        where.className = "lib-search-path";
+        where.innerText = path.join(" › ") + (byContent.some(x => x.n === n) ? " · נמצא במילים" : "");
+        b.appendChild(t); b.appendChild(where);
+        b.onclick = () => { exitSetlistPlay(); openLibrarySong(n); };
+        libSearchResults.appendChild(b);
+    });
+}
+libSearchInput.addEventListener("input", renderLibSearch);
+
+// ===== מסך דולק כל עוד שיר פתוח =====
+let wakeLock = null;
+async function updateWakeLock() {
+    const want = !!currentSongData && document.visibilityState === "visible";
+    if (!("wakeLock" in navigator)) return;
+    try {
+        if (want && !wakeLock) {
+            wakeLock = await navigator.wakeLock.request("screen");
+            wakeLock.addEventListener("release", () => { wakeLock = null; });
+        } else if (!want && wakeLock) {
+            await wakeLock.release();
+            wakeLock = null;
+        }
+    } catch (e) { /* הדפדפן לא אישר (למשל סוללה חלשה) - ממשיכים בלי */ }
+}
+// כשחוזרים לאפליקציה הדפדפן משחרר את המסך, אז מבקשים שוב
+document.addEventListener("visibilitychange", updateWakeLock);
+
+// ===== גלילה אוטומטית =====
+const autoScrollBtn = document.getElementById("autoScrollBtn");
+const scrollSpeedLabel = document.getElementById("scrollSpeedLabel");
+const SCROLL_MIN = 1, SCROLL_MAX = 10;
+let scrollSpeed = parseInt(localStorage.getItem("scrollSpeed"), 10) || 3;
+let scrollRaf = null, scrollLast = 0, scrollAcc = 0;
+
+function scrollerEl() { return document.querySelector(".main-content"); }
+
+function scrollStep(now) {
+    const sc = scrollerEl();
+    const dt = Math.min(100, now - scrollLast);
+    scrollLast = now;
+    scrollAcc += (4 + scrollSpeed * 6) * dt / 1000; // פיקסלים לשנייה: 10 עד 64
+    const whole = Math.floor(scrollAcc);
+    if (whole > 0) { sc.scrollTop += whole; scrollAcc -= whole; }
+    if (sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 1) { stopAutoScroll(); return; }
+    scrollRaf = requestAnimationFrame(scrollStep);
+}
+
+function startAutoScroll() {
+    if (!currentSongData) { showToast("פתח שיר כדי לגלול"); return; }
+    if (scrollRaf) return;
+    scrollLast = performance.now();
+    scrollAcc = 0;
+    scrollRaf = requestAnimationFrame(scrollStep);
+    autoScrollBtn.innerText = "⏸ עצור";
+    autoScrollBtn.classList.add("on");
+}
+
+function stopAutoScroll() {
+    if (scrollRaf) cancelAnimationFrame(scrollRaf);
+    scrollRaf = null;
+    autoScrollBtn.innerText = "▶ גלילה";
+    autoScrollBtn.classList.remove("on");
+}
+
+function changeScrollSpeed(d) {
+    scrollSpeed = Math.min(SCROLL_MAX, Math.max(SCROLL_MIN, scrollSpeed + d));
+    scrollSpeedLabel.innerText = scrollSpeed;
+    try { localStorage.setItem("scrollSpeed", scrollSpeed); } catch (e) {}
+}
+
+autoScrollBtn.addEventListener("click", () => scrollRaf ? stopAutoScroll() : startAutoScroll());
+document.getElementById("scrollSlowerBtn").addEventListener("click", () => changeScrollSpeed(-1));
+document.getElementById("scrollFasterBtn").addEventListener("click", () => changeScrollSpeed(1));
+changeScrollSpeed(0);
+
+// ===== אקורדים צבעוניים ומצב לילה (נשמרים במכשיר) =====
+const colorChordsBtn = document.getElementById("colorChordsBtn");
+const nightModeBtn = document.getElementById("nightModeBtn");
+
+function readFlag(key, def) { try { const v = localStorage.getItem(key); return v === null ? def : v === "1"; } catch (e) { return def; } }
+function writeFlag(key, v) { try { localStorage.setItem(key, v ? "1" : "0"); } catch (e) {} }
+
+let colorChords = readFlag("colorChords", true);
+let nightMode = readFlag("nightMode", false);
+
+function applyViewFlags() {
+    songDisplay.classList.toggle("colored", colorChords);
+    colorChordsBtn.classList.toggle("on", colorChords);
+    document.body.classList.toggle("night", nightMode);
+    nightModeBtn.classList.toggle("on", nightMode);
+    nightModeBtn.innerText = nightMode ? "☀️ יום" : "🌙 לילה";
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", nightMode ? "#0f1813" : "#1f6b3a");
+}
+colorChordsBtn.addEventListener("click", () => { colorChords = !colorChords; writeFlag("colorChords", colorChords); applyViewFlags(); });
+nightModeBtn.addEventListener("click", () => { nightMode = !nightMode; writeFlag("nightMode", nightMode); applyViewFlags(); });
+applyViewFlags();
+
+// ===== עריכה ידנית של שיר =====
+const editModal = document.getElementById("editModal");
+const editTitleInput = document.getElementById("editTitleInput");
+const editContentInput = document.getElementById("editContentInput");
+
+document.getElementById("editSongBtn").addEventListener("click", () => {
+    if (!currentSongData) { showToast("פתח שיר כדי לערוך"); return; }
+    stopAutoScroll();
+    editTitleInput.value = currentSongData.title || "";
+    editContentInput.value = currentSongData.content || "";
+    editModal.classList.remove("hidden");
+});
+document.getElementById("editCancelBtn").addEventListener("click", () => editModal.classList.add("hidden"));
+document.getElementById("editSaveBtn").addEventListener("click", () => {
+    if (!currentSongData) { editModal.classList.add("hidden"); return; }
+    const title = editTitleInput.value.trim() || currentSongData.title;
+    const content = editContentInput.value.replace(/\s+$/, "");
+    currentSongData.title = title;
+    currentSongData.content = content;
+    // שיר מהספרייה: נשמר מיד. שיר מחיפוש: יישמר כשלוחצים "שמור שיר"
+    const node = currentLibNodeId && findLibNode(currentLibNodeId);
+    if (node) {
+        node.title = title;
+        node.content = content;
+        saveLibrary();
+        if (!isReadOnlyOffline()) showToast("✅ השיר נשמר");
+    }
+    editModal.classList.add("hidden");
+    displayCurrentSong();
+    updateSaveChangesBtn();
+    if (libSearchInput.value) renderLibSearch();
+});
+
+// ===== רשימות הופעה =====
+// כל רשימה: { id, type: "setlist", name, songIds: [...] } בתוך libs.sl. שיר שנמחק מהספרייה פשוט מדולג
+const setlistModal = document.getElementById("setlistModal");
+const setlistModalTitle = document.getElementById("setlistModalTitle");
+const setlistModalBody = document.getElementById("setlistModalBody");
+const setlistModalBtns = document.getElementById("setlistModalBtns");
+const setlistBar = document.getElementById("setlistBar");
+let setlistView = null;      // null = רשימת הרשימות, אחרת מזהה הרשימה שפתוחה בחלון
+let setlistPlay = null;      // { id, index } כשמנגנים לפי רשימה
+
+function setlists() { return libs.sl.children; }
+function findSetlist(id) { return setlists().find(l => l.id === id) || null; }
+function setlistSongs(list) { return (list.songIds || []).map(id => findLibNode(id)).filter(Boolean); }
+
+function modalButton(text, onClick, cls) {
+    const b = document.createElement("button");
+    b.innerText = text;
+    if (cls) b.className = cls;
+    b.onclick = onClick;
+    return b;
+}
+
+function newSetlist() {
+    const name = prompt("שם לרשימת ההופעה החדשה:");
+    if (!name) return null;
+    const list = { id: "setlist_" + Date.now(), type: "setlist", name: name.trim(), songIds: [] };
+    setlists().push(list);
+    saveLibrary();
+    return list;
+}
+
+function openSetlistsModal(listId) {
+    setlistView = listId || null;
+    renderSetlistModal();
+    setlistModal.classList.remove("hidden");
+    closeMobileDrawer();
+}
+
+function renderSetlistModal() {
+    setlistModalBody.innerHTML = "";
+    setlistModalBtns.innerHTML = "";
+    const list = setlistView && findSetlist(setlistView);
+    if (!list) {
+        setlistView = null;
+        setlistModalTitle.innerText = "רשימות הופעה";
+        if (setlists().length === 0) setlistModalBody.innerText = "אין עדיין רשימות. צור רשימה, ואז הוסף אליה שירים מהתפריט ⋮ של כל שיר.";
+        setlists().forEach(l => {
+            const row = document.createElement("div");
+            row.className = "setlist-row";
+            const name = modalButton("🎤 " + l.name + "  (" + setlistSongs(l).length + ")", () => { setlistView = l.id; renderSetlistModal(); }, "setlist-name");
+            name.dir = "auto";
+            row.appendChild(name);
+            row.appendChild(modalButton("✏️", () => {
+                const n = prompt("שם חדש לרשימה:", l.name);
+                if (n) { l.name = n.trim(); saveLibrary(); renderSetlistModal(); }
+            }, "icon-btn"));
+            row.appendChild(modalButton("🗑️", () => {
+                if (!confirm("למחוק את הרשימה \"" + l.name + "\"? (השירים עצמם לא יימחקו)")) return;
+                libs.sl.children = setlists().filter(x => x.id !== l.id);
+                if (setlistPlay && setlistPlay.id === l.id) exitSetlistPlay();
+                saveLibrary();
+                renderSetlistModal();
+            }, "icon-btn"));
+            setlistModalBody.appendChild(row);
+        });
+        setlistModalBtns.appendChild(modalButton("➕ רשימה חדשה", () => { const l = newSetlist(); if (l) { setlistView = l.id; renderSetlistModal(); } }, "primary"));
+        setlistModalBtns.appendChild(modalButton("סגור", () => setlistModal.classList.add("hidden")));
+        return;
+    }
+    setlistModalTitle.innerText = "🎤 " + list.name;
+    const songs = setlistSongs(list);
+    if (songs.length === 0) setlistModalBody.innerText = "הרשימה ריקה. הוסף שירים מהתפריט ⋮ של שיר בספרייה (\"הוסף לרשימת הופעה\").";
+    songs.forEach((song, i) => {
+        const row = document.createElement("div");
+        row.className = "setlist-row";
+        const name = modalButton((i + 1) + ". " + song.title, () => playSetlist(list.id, i), "setlist-name");
+        name.dir = "auto";
+        row.appendChild(name);
+        const move = (d) => {
+            const ids = songs.map(x => x.id); // סדר בלי שירים שנמחקו
+            const j = i + d;
+            if (j < 0 || j >= ids.length) return;
+            [ids[i], ids[j]] = [ids[j], ids[i]];
+            list.songIds = ids;
+            saveLibrary();
+            renderSetlistModal();
+        };
+        row.appendChild(modalButton("▲", () => move(-1), "icon-btn"));
+        row.appendChild(modalButton("▼", () => move(1), "icon-btn"));
+        row.appendChild(modalButton("✕", () => {
+            list.songIds = songs.map(x => x.id).filter(id => id !== song.id);
+            saveLibrary();
+            renderSetlistModal();
+        }, "icon-btn"));
+        setlistModalBody.appendChild(row);
+    });
+    if (songs.length) setlistModalBtns.appendChild(modalButton("▶ התחל", () => playSetlist(list.id, 0), "primary"));
+    setlistModalBtns.appendChild(modalButton("→ כל הרשימות", () => { setlistView = null; renderSetlistModal(); }));
+    setlistModalBtns.appendChild(modalButton("סגור", () => setlistModal.classList.add("hidden")));
+}
+
+// "הוסף לרשימת הופעה..." מהתפריט של שיר
+function openAddToSetlist(songId) {
+    const song = findLibNode(songId);
+    if (!song) return;
+    closeMobileDrawer();
+    setlistModalTitle.innerText = "הוסף לרשימה";
+    setlistModalBody.innerHTML = "";
+    setlistModalBtns.innerHTML = "";
+    const add = (l) => {
+        if (!l) return;
+        l.songIds = l.songIds || [];
+        if (l.songIds.includes(songId)) { showToast("השיר כבר ברשימה \"" + l.name + "\""); return; }
+        l.songIds.push(songId);
+        saveLibrary();
+        setlistModal.classList.add("hidden");
+        showToast("✅ נוסף ל\"" + l.name + "\"");
+    };
+    if (setlists().length === 0) setlistModalBody.innerText = "אין עדיין רשימות. צור רשימה חדשה:";
+    setlists().forEach(l => {
+        const b = modalButton("🎤 " + l.name + "  (" + setlistSongs(l).length + ")", () => add(l), "move-folder-btn");
+        b.dir = "auto";
+        setlistModalBody.appendChild(b);
+    });
+    setlistModalBtns.appendChild(modalButton("➕ רשימה חדשה", () => add(newSetlist()), "primary"));
+    setlistModalBtns.appendChild(modalButton("ביטול", () => setlistModal.classList.add("hidden")));
+    setlistModal.classList.remove("hidden");
+}
+
+function playSetlist(id, index) {
+    const list = findSetlist(id);
+    const songs = list ? setlistSongs(list) : [];
+    if (!songs.length) return;
+    index = Math.max(0, Math.min(index, songs.length - 1));
+    setlistModal.classList.add("hidden");
+    openLibrarySong(songs[index]);
+    setlistPlay = { id, index };
+    updateSetlistBar();
+}
+
+function updateSetlistBar() {
+    const list = setlistPlay && findSetlist(setlistPlay.id);
+    const songs = list ? setlistSongs(list) : [];
+    if (!list || !songs.length) { setlistPlay = null; setlistBar.classList.add("hidden"); return; }
+    if (setlistPlay.index >= songs.length) setlistPlay.index = songs.length - 1;
+    document.getElementById("setlistPos").innerText = "🎤 " + list.name + " · " + (setlistPlay.index + 1) + "/" + songs.length;
+    document.getElementById("setlistPrevBtn").disabled = setlistPlay.index === 0;
+    document.getElementById("setlistNextBtn").disabled = setlistPlay.index === songs.length - 1;
+    setlistBar.classList.remove("hidden");
+}
+
+function exitSetlistPlay() {
+    setlistPlay = null;
+    setlistBar.classList.add("hidden");
+}
+
+// נקרא כשהספריות מתחלפות (ענן, התנתקות, עותק אופליין)
+function refreshSetlistViews() {
+    if (setlistPlay) updateSetlistBar();
+    if (!setlistModal.classList.contains("hidden") && setlistModalTitle.innerText !== "הוסף לרשימה") renderSetlistModal();
+}
+
+document.getElementById("openSetlistsBtn").addEventListener("click", () => openSetlistsModal());
+document.getElementById("setlistPrevBtn").addEventListener("click", () => setlistPlay && playSetlist(setlistPlay.id, setlistPlay.index - 1));
+document.getElementById("setlistNextBtn").addEventListener("click", () => setlistPlay && playSetlist(setlistPlay.id, setlistPlay.index + 1));
+document.getElementById("setlistExitBtn").addEventListener("click", exitSetlistPlay);
+
+// ===== גיבוי לקובץ ושחזור =====
+document.getElementById("exportBackupBtn").addEventListener("click", () => {
+    const data = window.getLibrariesForCloud();
+    const backup = { app: "ChordsApp", kind: "backup", version: 1, exportedAt: new Date().toISOString(), he: data.he, en: data.en, setLists: data.sl };
+    const blob = new Blob([JSON.stringify(backup, null, 1)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ChordsApp-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    showToast("💾 קובץ הגיבוי ירד (" + (countSongs(data.he) + countSongs(data.en)) + " שירים)");
+});
+
+const importBackupInput = document.getElementById("importBackupInput");
+document.getElementById("importBackupBtn").addEventListener("click", () => {
+    if (isReadOnlyOffline()) { showToast("📴 במצב אופליין אי אפשר לשחזר. התחבר קודם"); return; }
+    importBackupInput.value = "";
+    importBackupInput.click();
+});
+importBackupInput.addEventListener("change", () => {
+    const file = importBackupInput.files && importBackupInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        let b = null;
+        try { b = JSON.parse(reader.result); } catch (e) {}
+        const ok = (l) => l && Array.isArray(l.children);
+        if (!b || !ok(b.he) || !ok(b.en)) { alert("הקובץ הזה לא נראה כמו גיבוי של האפליקציה"); return; }
+        const fromBackup = { he: b.he, en: b.en, sl: ok(b.setLists) ? b.setLists : emptyLibrary("sl") };
+        const current = window.getLibrariesForCloud();
+        const before = countSongs(current.he) + countSongs(current.en);
+        // מיזוג בלי בסיס: מוסיף מה שחסר, ושום דבר שקיים כרגע לא נמחק או משתנה
+        const merged = window.mergeLibraries(current, fromBackup, null);
+        const added = countSongs(merged.he) + countSongs(merged.en) - before;
+        if (!confirm("גיבוי מ-" + (b.exportedAt ? fmtDate(b.exportedAt) : "?") + ".\n" +
+            (added > 0 ? added + " שירים יתווספו לספרייה." : "כל השירים שבגיבוי כבר נמצאים בספרייה.") +
+            "\nשירים שקיימים עכשיו לא יימחקו ולא ישתנו. להמשיך?")) return;
+        replaceInPlace(libs.he, merged.he);
+        replaceInPlace(libs.en, merged.en);
+        replaceInPlace(libs.sl, merged.sl || emptyLibrary("sl"));
+        saveLibrary();
+        refreshSetlistViews();
+        accountPanel.classList.add("hidden");
+        showToast("✅ השחזור הושלם");
+    };
+    reader.readAsText(file);
+});
 
 // התקנה כאפליקציה מכרום ("הוסף למסך הבית") ועבודה בלי אינטרנט. לא בתוך אפליקציית ה-APK
 if ("serviceWorker" in navigator && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {

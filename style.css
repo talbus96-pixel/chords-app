@@ -165,6 +165,72 @@ h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); fon
 .toast { background: var(--green-dark); border: 1px solid var(--gold); }
 .context-menu li:hover, .move-folder-btn:hover:not(:disabled) { background: var(--green-soft); }
 
+/* ==================================================== */
+/* טון, כלים, תוצאות חיפוש, רשימות הופעה, עריכה */
+.transpose-group, .speed-group { display: flex; align-items: center; gap: 6px; }
+.transpose-group { flex: 2; min-width: 240px; }
+.controls .transpose-group button { flex: 1; min-width: 0; }
+#transposeLabel { flex: 0.8; font-size: 13px; direction: ltr; }
+#transposeLabel.changed { background: var(--gold); color: #fff; }
+.tools-row { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: nowrap; }
+.tools-row button { flex: 1; min-width: 0; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;
+    background: var(--surface-2); color: var(--green-dark); border: 1px solid var(--border); }
+.tools-row button.on { background: var(--green); color: #fff; border-color: var(--green); }
+.tools-row .speed-group { gap: 3px; }
+.tools-row .speed-group button { flex: none; min-width: 32px; padding: 8px 4px; }
+#scrollSpeedLabel { min-width: 18px; text-align: center; font-weight: bold; color: var(--muted); font-size: 13px; }
+
+#songDisplay.colored .chord { color: var(--chord); font-weight: bold; }
+:root { --chord: #1f6b3a; }
+
+.search-results { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.results-toggle { align-self: flex-start; background: none; border: none; color: var(--green); font-weight: bold; cursor: pointer; padding: 4px 0; font-size: 13px; text-decoration: underline; }
+.result-item { text-align: start; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; font-size: 13px; }
+.result-item.current { border-color: var(--green); background: var(--green-soft); }
+
+.setlist-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 6px; border-radius: 8px; background: var(--green-soft); border: 1px solid var(--green); }
+.setlist-bar button { padding: 8px 10px; border-radius: 6px; border: none; background: var(--green); color: #fff; font-weight: bold; cursor: pointer; }
+.setlist-bar button:disabled { opacity: 0.35; cursor: default; }
+#setlistExitBtn { background: transparent; color: var(--muted); }
+#setlistPos { flex: 1; text-align: center; font-weight: bold; font-size: 13px; color: var(--green-dark); unicode-bidi: plaintext; }
+
+.sidebar-actions { display: flex; flex-direction: column; gap: 6px; }
+#openSetlistsBtn { background: var(--gold); color: #fff; }
+.lib-search { margin-bottom: 10px; }
+#libSearchInput { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fffdf5; color: var(--text); font-size: 14px; }
+.lib-search-results { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.lib-search-item { text-align: start; padding: 8px 10px; border: none; border-radius: 6px; background: var(--surface-2); color: var(--text); cursor: pointer; font-size: 14px; }
+.lib-search-path { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.setlist-row { display: flex; align-items: center; gap: 4px; }
+.setlist-row .setlist-name { flex: 1; text-align: start; padding: 10px 12px; background: var(--surface-2); color: var(--text); border: none; border-radius: 6px; cursor: pointer; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.setlist-row .icon-btn { padding: 8px; background: none; border: none; cursor: pointer; font-size: 14px; color: var(--muted); }
+.modal-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.modal-btns button { flex: 1; padding: 9px; border-radius: 6px; border: none; background: var(--gold-soft); color: var(--green-dark); font-weight: bold; cursor: pointer; }
+.modal-btns button.primary { background: var(--green); color: #fff; }
+
+.edit-card { width: 94%; max-width: 760px; max-height: 92vh; display: flex; flex-direction: column; gap: 8px; text-align: start; }
+.edit-card h3 { text-align: center; }
+#editTitleInput { padding: 9px; border: 1px solid var(--border); border-radius: 6px; font-size: 15px; background: #fffdf5; color: var(--text); }
+.edit-hint { font-size: 12px; color: var(--muted); }
+#editContentInput { flex: 1; min-height: 50vh; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-size: 14px; white-space: pre; overflow: auto; background: #fffdf5; color: var(--text); resize: vertical; }
+
+/* ==================================================== */
+/* מצב לילה: רקע כהה, טקסט בהיר, אקורדים בזהב */
+body.night {
+    --bg: #0f1813; --surface: #17231c; --surface-2: #1f2e25; --border: #34503e;
+    --text: #ece3c8; --muted: #9fae94; --green: #2e8a50; --green-dark: #d9e8d3; --green-soft: #22392b;
+    --gold: #c9a23a; --gold-soft: #2c3a2b; --chord: #e8c35a;
+    background-image: none;
+}
+body.night .mobile-header { background: #142219; }
+body.night #searchInput, body.night #songDisplayWrapper, body.night #libSearchInput,
+body.night #editTitleInput, body.night #editContentInput { background: #121c16; color: var(--text); }
+body.night .container { box-shadow: none; }
+body.night .modal-overlay { background: rgba(0,0,0,0.65); }
+body.night .tree-item { color: var(--text); }
+body.night .toast { background: #22392b; }
+
 /* כללי התאמה לטלפון (מסכים קטנים מ-768 פיקסלים) */
 /* ==================================================== */
 @media (max-width: 768px) {
