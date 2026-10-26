@@ -155,5 +155,6 @@ settings panel (the ⚙️ button, top corner; ids still `accountMenu` / `accoun
 to a JSON file and restore (restore only ADDS what is missing, via `mergeLibraries(current, backup, null)`).
 
 Removed at the owner's request: set lists. Not wanted: chord diagrams. Postponed: share a song.
-Known: in Hebrew (RTL) songs a chord ending in "#" at the end of a chord line shows as "#F"
-(pre-existing bidi issue, not fixed yet).
+Fixed (Oct 2026): in Hebrew (RTL) songs a chord ending in "#" at the end of a chord line showed
+as "#F". `songHtml` now puts an invisible LRM (U+200E) right after the last chord of each chord
+line; only lines ending in "#" (or another neutral char) change.

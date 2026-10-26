@@ -748,9 +748,13 @@ function escapeHtml(t) {
 // הטקסט המוצג: המקור אחרי שינוי הטון השמור בשיר. האקורדים עטופים כדי שאפשר יהיה לצבוע אותם
 function songHtml(content, steps) {
     const text = steps ? transposeText(content, steps) : content;
-    return text.split("\n").map(line => isChordLine(line)
-        ? line.replace(/\S+/g, tok => CHORD_RE.test(tok) ? '<span class="chord">' + escapeHtml(tok) + '</span>' : escapeHtml(tok))
-        : escapeHtml(line)).join("\n");
+    return text.split("\n").map(line => {
+        if (!isChordLine(line)) return escapeHtml(line);
+        const html = line.replace(/\S+/g, tok => CHORD_RE.test(tok) ? '<span class="chord">' + escapeHtml(tok) + '</span>' : escapeHtml(tok));
+        // סימן כיוון שמאל-לימין בלתי נראה אחרי האקורד האחרון: בשיר בעברית "#" בסוף השורה
+        // נצמד אחרת לצד העברי ומוצג הפוך ("#F" במקום "F#")
+        return html.replace(/(\S)(\s*)$/, "$1\u200E$2");
+    }).join("\n");
 }
 
 function displayCurrentSong() {
