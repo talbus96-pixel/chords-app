@@ -3,20 +3,19 @@ let currentSongData = null;
 let currentLibNodeId = null; // מזהה השיר שמוצג, אם נפתח מהספרייה (ולא מחיפוש)
 let activeFolderForColor = null;
 
-// 10 צבעים ייעודיים לבחירה
-// צבעים בסגנון אירי: ירוקים, זהב, חום, בורדו, אברש, כחול ים ואבן
+// 30 צבעים לתיקיות, מסודרים לפי גוון (כוללים את 10 הצבעים המקוריים, שתיקיות קיימות משתמשות בהם)
 const DEFAULT_FOLDER_COLOR = "#1f6b3a";
 const PRESET_COLORS = [
-    "#1f6b3a", // ירוק אירי
-    "#5c8a3a", // ירוק אזוב
-    "#3f8f7a", // ירוק ים
-    "#c49a2c", // זהב
-    "#c8742c", // ענבר
-    "#8b4a2b", // חום אדמה
-    "#8e2c3a", // בורדו
-    "#7a5a8c", // סגול אברש
-    "#3d6a8a", // כחול ים
-    "#7a7466"  // אבן
+    // ירוקים
+    "#1f6b3a", "#2e8b57", "#5c8a3a", "#6b8e23", "#8fbf6a", "#a8d5ba",
+    // כחולים וטורקיז
+    "#3f8f7a", "#4fb3b0", "#3d6a8a", "#2f5d8a", "#5aa9d6", "#9cc9e8",
+    // סגולים
+    "#5e3c8c", "#7a5a8c", "#9b7fd1", "#c3aee3", "#b35c8a", "#e57f8f",
+    // אדומים וורודים, כתומים
+    "#8e2c3a", "#d9534f", "#f2a7b8", "#c8742c", "#e8955a", "#f2c14e",
+    // צהובים, חומים ואפורים
+    "#c49a2c", "#e9d97a", "#8b4a2b", "#b8a48a", "#7a7466", "#4a4a4a"
 ];
 
 const searchInput = document.getElementById("searchInput");
@@ -239,7 +238,7 @@ function saveLocalOnly() {
     renderLibrary();
 }
 
-// אתחול 10 הצבעים במודאל
+// אתחול הצבעים במודאל
 paletteGrid.innerHTML = "";
 PRESET_COLORS.forEach(color => {
     const dot = document.createElement("div");
@@ -471,7 +470,7 @@ function openContextMenu(x, y, node) {
         contextMenuList.innerHTML = `
             <li onclick="createFolder('${node.id}')">➕ תת-תיקייה חדשה</li>
             <li onclick="renameItem('${node.id}')">✏️ שנה שם</li>
-            <li onclick="openColorModal('${node.id}')">🎨 בחר צבע מתוך 10</li>
+            <li onclick="openColorModal('${node.id}')">🎨 בחר צבע</li>
             <li onclick="openMoveModal('${node.id}')">📂 העבר לתיקייה...</li>
             <li onclick="moveItem('${node.id}', 'root')">📤 העבר לתיקייה הראשית</li>
             <li onclick="moveToOtherLibrary('${node.id}')">🔁 ${otherLibLabel}</li>
@@ -1309,11 +1308,7 @@ function applyViewFlags() {
 const THEMES = (window.SHIRON_THEMES || [["irish", "אירי"]]).map(t => t[0]);
 // צבעי הדוגמית בכפתור: ראשי, משני, רקע (הראשי משמש גם לפס העליון של הטלפון)
 const THEME_SWATCH = {
-    irish: ["#8dbb9d", "#e8c99a", "#fffdf9"], sea: ["#77afcb", "#e6d2a8", "#fffdf8"], sky: ["#8fb8e8", "#f5c6d6", "#fdfdff"],
-    forest: ["#7fa58a", "#c9a77f", "#fbfbf6"], lemon: ["#a8c66c", "#f2df7e", "#fffffa"], peach: ["#f0b48f", "#f3d79b", "#fffdf9"],
-    sunset: ["#ee9f8d", "#f6cf8e", "#fffcfa"], rose: ["#e3a3b4", "#f2d3a8", "#fffdfc"], berry: ["#c58fb3", "#b8d4c2", "#fffdfe"],
-    lavender: ["#a99bd1", "#f0c9b8", "#fffdfd"], coffee: ["#b39279", "#d9c3a5", "#fffcf8"], stone: ["#9aa3a8", "#d8d2c8", "#fefefe"],
-    scroll: ["#8a7350", "#c9a978", "#faf5ea"]
+    irish: ["#8dbb9d", "#e8c99a", "#fffdf9"], scroll: ["#8a7350", "#c9a978", "#faf5ea"], sea: ["#77afcb", "#e6d2a8", "#fffdf8"]
 };
 const themePicker = document.getElementById("themePicker");
 (window.SHIRON_THEMES || []).forEach(([key, name]) => {

@@ -72,8 +72,8 @@ h1.desktop-only { text-align: center; margin-bottom: 20px; }
 .context-divider { height: 1px; background: #e2e8f0; margin: 4px 0; }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 2000; }
 .color-palette-card { background: white; padding: 22px; border-radius: 12px; width: 300px; text-align: center; }
-.palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 18px; margin-top: 15px; }
-.color-circle { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; }
+.palette-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; justify-items: center; margin-bottom: 18px; margin-top: 15px; }
+.color-circle { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
 #closePaletteBtn { padding: 8px; width: 100%; border-radius: 6px; border: none; background: #e2e8f0; font-weight: bold; }
 
 /* ==================================================== */
@@ -203,32 +203,12 @@ h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); fon
 #editContentInput { flex: 1; min-height: 50vh; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-size: 14px; white-space: pre; overflow: auto; background: #fffdf5; color: var(--text); resize: vertical; }
 
 /* ==================================================== */
-/* עיצובים רכים (כל העיצובים חוץ ממגילה): אותו מבנה, רק הצבעים משתנים.
+/* עיצובים רכים (אירי, ים): אותו מבנה, רק הצבעים משתנים.
    להוספת עיצוב: שורת משתנים כאן + שם ב-SHIRON_THEMES (index.html) + כפתור נוצר לבד */
 html[data-theme="irish"] { --bg: #f7f4ee; --surface: #fffdf9; --surface-2: #f4f1ea; --border: #e8e1d3; --text: #45423b; --muted: #9a9384;
     --green: #8dbb9d; --green-dark: #557e65; --green-soft: #e8f2eb; --gold: #e8c99a; --gold-soft: #fbf3e6; --chord: #5f9a76; --tint-a: #eef6f0; --tint-b: #fbf0e3; --btn-text: #8a6d45; }
 html[data-theme="sea"] { --bg: #eef5f6; --surface: #fffdf8; --surface-2: #f5f0e5; --border: #dfe5e2; --text: #36444c; --muted: #8d9aa0;
     --green: #77afcb; --green-dark: #3f7393; --green-soft: #e4f1f7; --gold: #e6d2a8; --gold-soft: #f8f1e2; --chord: #3d84ad; --tint-a: #e3f1f6; --tint-b: #f5ecd9; --btn-text: #7d6640; }
-html[data-theme="sky"] { --bg: #f3f6fb; --surface: #fdfdff; --surface-2: #eef2f8; --border: #dee5f0; --text: #3a4150; --muted: #8f98a8;
-    --green: #8fb8e8; --green-dark: #4b70a3; --green-soft: #e8f0fb; --gold: #f5c6d6; --gold-soft: #fcf0f4; --chord: #5582c0; --tint-a: #e6eefb; --tint-b: #fbeef3; --btn-text: #8b5a6b; }
-html[data-theme="forest"] { --bg: #f1f2ec; --surface: #fbfbf6; --surface-2: #eef0e7; --border: #dadfd0; --text: #353d36; --muted: #899386;
-    --green: #7fa58a; --green-dark: #3f6a4f; --green-soft: #e3eee6; --gold: #c9a77f; --gold-soft: #f4ebdf; --chord: #4f7f5f; --tint-a: #e4ede3; --tint-b: #f1e8db; --btn-text: #6f5636; }
-html[data-theme="lemon"] { --bg: #fbfaee; --surface: #fffffa; --surface-2: #f6f5e6; --border: #e7e6cc; --text: #414236; --muted: #9a9a84;
-    --green: #a8c66c; --green-dark: #64803a; --green-soft: #eef5df; --gold: #f2df7e; --gold-soft: #fcf7dc; --chord: #6f9640; --tint-a: #f3f7de; --tint-b: #fdf6d6; --btn-text: #7e6d2a; }
-html[data-theme="peach"] { --bg: #fbf5ef; --surface: #fffdf9; --surface-2: #f8f0e7; --border: #efe0d0; --text: #4a4038; --muted: #a5958a;
-    --green: #f0b48f; --green-dark: #b06a42; --green-soft: #fdeee4; --gold: #f3d79b; --gold-soft: #fdf5e3; --chord: #c97a4c; --tint-a: #fdeadc; --tint-b: #fbf3df; --btn-text: #8b6c3d; }
-html[data-theme="sunset"] { --bg: #fbf3f0; --surface: #fffcfa; --surface-2: #f9eeea; --border: #f0dcd5; --text: #4b3b37; --muted: #a8928c;
-    --green: #ee9f8d; --green-dark: #b25a4c; --green-soft: #fdebe6; --gold: #f6cf8e; --gold-soft: #fdf4e3; --chord: #c86655; --tint-a: #fde3dc; --tint-b: #fdf0d8; --btn-text: #8d6830; }
-html[data-theme="rose"] { --bg: #faf4f4; --surface: #fffdfc; --surface-2: #f7efef; --border: #efdfe1; --text: #4a3c40; --muted: #a39196;
-    --green: #e3a3b4; --green-dark: #a35a70; --green-soft: #fbecf0; --gold: #f2d3a8; --gold-soft: #fcf3e6; --chord: #c06a84; --tint-a: #fbe9ee; --tint-b: #fdf2e3; --btn-text: #8b6b45; }
-html[data-theme="berry"] { --bg: #f8f3f6; --surface: #fffdfe; --surface-2: #f5eef3; --border: #ecdde7; --text: #463943; --muted: #a08f9b;
-    --green: #c58fb3; --green-dark: #84466f; --green-soft: #f6eaf2; --gold: #b8d4c2; --gold-soft: #edf5f0; --chord: #a0588a; --tint-a: #f6e7f1; --tint-b: #e9f3ed; --btn-text: #4f735d; }
-html[data-theme="lavender"] { --bg: #f6f4f9; --surface: #fffdfd; --surface-2: #f3f0f6; --border: #e5dfee; --text: #403b4a; --muted: #978fa5;
-    --green: #a99bd1; --green-dark: #6a5a9a; --green-soft: #efebf8; --gold: #f0c9b8; --gold-soft: #fbf1ec; --chord: #7d6bb5; --tint-a: #eee9f8; --tint-b: #fbeee8; --btn-text: #8a6355; }
-html[data-theme="coffee"] { --bg: #f6f1ec; --surface: #fffcf8; --surface-2: #f3ece4; --border: #e6dacd; --text: #45392f; --muted: #9e8f82;
-    --green: #b39279; --green-dark: #74553f; --green-soft: #f2e9e1; --gold: #d9c3a5; --gold-soft: #f7f0e6; --chord: #8c6649; --tint-a: #f1e7dd; --tint-b: #f6efe3; --btn-text: #6e5538; }
-html[data-theme="stone"] { --bg: #f4f4f3; --surface: #fefefe; --surface-2: #f1f1ef; --border: #e2e2df; --text: #3b3e40; --muted: #94979a;
-    --green: #9aa3a8; --green-dark: #555e63; --green-soft: #eceff0; --gold: #d8d2c8; --gold-soft: #f4f2ee; --chord: #5f6b72; --tint-a: #eef0f1; --tint-b: #f3f1ed; --btn-text: #5f5a52; }
 html:where([data-theme]:not([data-theme="scroll"])) body { background-image: radial-gradient(circle at 15% 0%, var(--tint-a) 0, transparent 45%), radial-gradient(circle at 90% 100%, var(--tint-b) 0, transparent 50%); }
 html:where([data-theme]:not([data-theme="scroll"])) .mobile-header { background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: 0 2px 10px rgba(90, 90, 90, 0.06); }
 html:where([data-theme]:not([data-theme="scroll"])) .mobile-title { color: var(--green-dark); }
@@ -361,7 +341,7 @@ body.night .menu-btn { background: var(--surface-2); color: var(--green-dark); b
 .settings-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 .settings-section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
 .settings-title { font-size: 11px; font-weight: bold; color: var(--muted); margin-bottom: 6px; }
-.theme-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-height: 210px; overflow-y: auto; }
+.theme-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .theme-picker button { padding: 6px 2px; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; font-size: 12px; font-weight: bold; color: #444; }
 .theme-picker button.on { border-color: var(--green-dark); }
 .theme-swatch { display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 4px; }

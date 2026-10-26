@@ -10,8 +10,7 @@
     <!-- העיצוב שנבחר בהגדרות, לפני שהדף מצויר (בלי הבהוב) -->
     <script>
         // העיצובים לבחירה בהגדרות (השם = הצבעים ב-style.css). העיצוב השמור נקבע לפני שהדף מצויר, בלי הבהוב
-        window.SHIRON_THEMES = [["irish", "אירי"], ["sea", "ים"], ["sky", "שמיים"], ["forest", "יער"], ["lemon", "לימון"], ["peach", "אפרסק"],
-            ["sunset", "שקיעה"], ["rose", "ורד"], ["berry", "פטל"], ["lavender", "לבנדר"], ["coffee", "קפה"], ["stone", "אבן"], ["scroll", "מגילה"]];
+        window.SHIRON_THEMES = [["irish", "אירי"], ["scroll", "מגילה"], ["sea", "ים"]];
         try { var t = localStorage.getItem("appTheme"); document.documentElement.dataset.theme = window.SHIRON_THEMES.some(function (x) { return x[0] === t; }) ? t : "irish"; }
         catch (e) { document.documentElement.dataset.theme = "irish"; }
     </script>
