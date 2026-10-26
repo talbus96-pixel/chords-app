@@ -33,8 +33,14 @@ Personal chord-sheet app (Hebrew + English songs), UI in Hebrew/RTL:
 - Personal library: tree of folders and songs, separate Hebrew and English libraries
   (English library flips the sidebar to the left/LTR).
 - Transposition, font size, Google login, cloud sync (Firestore), offline copies, PWA offline.
-- Design: "Irish souvenir" theme (parchment, Irish green, gold). Fonts: Amatic SC (titles),
-  Rubik (UI) from Google Fonts. Theme variables in the "מזכרת אירית" block of `style.css`.
+- Design: soft/pastel, chosen in ⚙️ settings: `irish` (default: soft mint, cream, peach-gold),
+  `scroll` (light parchment with soft rollers on the song card), `sea` (light blue, blue, sand,
+  cream). Stored in localStorage `appTheme`, set on `<html data-theme="...">` by an inline script
+  in `<head>` (no flash). Base variables = the "מזכרת אירית" block of `style.css`; each theme is
+  a `html[data-theme="x"] ...` block after it; night mode (`body.night`) comes after the themes.
+  The owner wants it GENTLE (pastel, "not a blackjack table").
+- Font: the ORIGINAL system font everywhere ("Segoe UI", Tahoma, ... sans-serif), titles too.
+  No Google Fonts (owner asked to go back to the original font).
 
 ## 2. Files and services
 
@@ -132,7 +138,7 @@ offline edits, first-run rescue, no cross-account copy, folder toggle = no write
 ## 7. Features and ideas
 
 **The owner wants the app MINIMAL and calm: more features = more visual load.** Keep the song
-screen clean; put rarely used toggles in the 👤 panel or a ⋮ menu, not above the chords.
+screen clean; put rarely used toggles in the ⚙️ settings panel or a ⋮ menu, not above the chords.
 
 Song screen: the ORIGINAL two buttons "העלה חצי טון (+)" / "הורד חצי טון (-)" + "A− 13 A+"
 (owner rejected a reset-to-original button and a compact "− 0 +" control), one row
@@ -141,8 +147,9 @@ Transposition is stored per song (`transpose`, original text kept; "שמור ש�
 Other features: pick from up to 5 search results ("לא השיר הנכון?"); search inside the library
 (sidebar box, title or lyrics, both libraries); screen stays awake while a song is open (Wake
 Lock); auto-scroll speed 1-10; song editing from the song's ⋮ menu ("✏️ ערוך שיר"); in the 👤
-panel: night mode (`body.night` overrides theme variables), colored chords, backup to a JSON file
-and restore (restore only ADDS what is missing, via `mergeLibraries(current, backup, null)`).
+settings panel (the ⚙️ button, top corner; ids still `accountMenu` / `accountPanel`): account
+(login/logout, sync status), design picker + night mode + colored chords, offline copies, backup
+to a JSON file and restore (restore only ADDS what is missing, via `mergeLibraries(current, backup, null)`).
 
 Removed at the owner's request: set lists. Not wanted: chord diagrams. Postponed: share a song.
 Known: in Hebrew (RTL) songs a chord ending in "#" at the end of a chord line shows as "#F"

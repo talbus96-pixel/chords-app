@@ -7,9 +7,8 @@
     <title>Shiron</title>
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#1f6b3a">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&family=Rubik:wght@400;500;700&display=swap">
+    <!-- העיצוב שנבחר בהגדרות, לפני שהדף מצויר (בלי הבהוב) -->
+    <script>try { document.documentElement.dataset.theme = ["irish", "scroll", "sea"].indexOf(localStorage.getItem("appTheme")) >= 0 ? localStorage.getItem("appTheme") : "irish"; } catch (e) { document.documentElement.dataset.theme = "irish"; }</script>
     <link rel="icon" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="stylesheet" href="style.css">
@@ -18,29 +17,44 @@
     <!-- תפריט חשבון מתקפל: התחברות, אופליין ועותקים -->
     <div id="accountMenu" class="account-menu">
         <button id="accountToggleBtn" class="account-toggle">
-            <span>👤</span>
+            <span>⚙️</span>
             <span id="accountOfflineIcon" class="hidden">📴</span>
             <span id="accountLabel">התחברות</span>
             <span id="accountStatus"></span>
+            <span class="toggle-text">הגדרות</span>
             <span class="caret">▾</span>
         </button>
         <div id="accountPanel" class="account-panel hidden">
-            <div id="accountInfo"></div>
-            <div class="offline-row">
-                <button id="downloadOfflineBtn" class="hidden" disabled>📥 הורד לשימוש אופליין</button>
-                <button id="manageOfflineBtn">🗂️ עותקי אופליין</button>
+            <div class="settings-section">
+                <div class="settings-title">חשבון</div>
+                <div id="accountInfo"></div>
+                <div id="offlineBanner" class="offline-banner hidden"></div>
+                <div id="syncError" class="sync-error hidden"></div>
             </div>
-            <div class="offline-row">
-                <button id="nightModeBtn">🌙 מצב לילה</button>
-                <button id="colorChordsBtn">🎨 אקורדים צבעוניים</button>
+            <div class="settings-section">
+                <div class="settings-title">עיצוב</div>
+                <div class="theme-picker">
+                    <button data-theme-pick="irish"><div class="theme-swatch"><span style="background:#8dbb9d"></span><span style="background:#e8c99a"></span><span style="background:#fffdf9"></span></div>אירי</button>
+                    <button data-theme-pick="scroll"><div class="theme-swatch"><span style="background:#8a7350"></span><span style="background:#c9a978"></span><span style="background:#faf5ea"></span></div>מגילה</button>
+                    <button data-theme-pick="sea"><div class="theme-swatch"><span style="background:#77afcb"></span><span style="background:#e6d2a8"></span><span style="background:#fffdf8"></span></div>ים</button>
+                </div>
+                <div class="offline-row">
+                    <button id="nightModeBtn">🌙 מצב לילה</button>
+                    <button id="colorChordsBtn">🎨 אקורדים צבעוניים</button>
+                </div>
             </div>
-            <div class="offline-row">
-                <button id="exportBackupBtn">💾 גיבוי לקובץ</button>
-                <button id="importBackupBtn">📂 שחזור מגיבוי</button>
-                <input type="file" id="importBackupInput" accept=".json,application/json" class="hidden">
+            <div class="settings-section">
+                <div class="settings-title">שמירה וגיבוי</div>
+                <div class="offline-row">
+                    <button id="downloadOfflineBtn" class="hidden" disabled>📥 הורד לשימוש אופליין</button>
+                    <button id="manageOfflineBtn">🗂️ עותקי אופליין</button>
+                </div>
+                <div class="offline-row">
+                    <button id="exportBackupBtn">💾 גיבוי לקובץ</button>
+                    <button id="importBackupBtn">📂 שחזור מגיבוי</button>
+                    <input type="file" id="importBackupInput" accept=".json,application/json" class="hidden">
+                </div>
             </div>
-            <div id="offlineBanner" class="offline-banner hidden"></div>
-            <div id="syncError" class="sync-error hidden"></div>
         </div>
     </div>
 

@@ -1299,11 +1299,24 @@ function applyViewFlags() {
     document.body.classList.toggle("night", nightMode);
     nightModeBtn.classList.toggle("on", nightMode);
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", nightMode ? "#0f1813" : "#1f6b3a");
+    if (meta) meta.setAttribute("content", nightMode ? "#0f1813" : THEME_COLOR[currentTheme()]);
 }
+// ===== בחירת עיצוב (אירי / מגילה / ים) =====
+const THEMES = ["irish", "scroll", "sea"];
+const THEME_COLOR = { irish: "#8dbb9d", scroll: "#8a7350", sea: "#77afcb" };
+function currentTheme() { const t = document.documentElement.dataset.theme; return THEMES.includes(t) ? t : "irish"; }
+function applyTheme(t) {
+    if (!THEMES.includes(t)) t = "irish";
+    document.documentElement.dataset.theme = t;
+    try { localStorage.setItem("appTheme", t); } catch (e) {}
+    document.querySelectorAll("[data-theme-pick]").forEach(b => b.classList.toggle("on", b.dataset.themePick === t));
+    applyViewFlags();
+}
+document.querySelectorAll("[data-theme-pick]").forEach(b => b.addEventListener("click", () => applyTheme(b.dataset.themePick)));
+
 colorChordsBtn.addEventListener("click", () => { colorChords = !colorChords; writeFlag("colorChords", colorChords); applyViewFlags(); });
 nightModeBtn.addEventListener("click", () => { nightMode = !nightMode; writeFlag("nightMode", nightMode); applyViewFlags(); });
-applyViewFlags();
+applyTheme(currentTheme());
 
 // ===== עריכה ידנית של שיר =====
 const editModal = document.getElementById("editModal");

@@ -1,4 +1,4 @@
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: "Rubik", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
 body { background-color: #f1f5f9; color: #1e293b; direction: rtl; height: 100vh; overflow: hidden; }
 
 /* כותרת עליונה לנייד */
@@ -120,17 +120,17 @@ h1.desktop-only { text-align: center; margin-bottom: 20px; }
     --text: #2d2a1e; --muted: #7a6f52;
     --green: #1f6b3a; --green-dark: #154d29; --green-soft: #dcebd8;
     --gold: #c49a2c; --gold-soft: #f1e2b3;
-    --title-font: "Amatic SC", "Rubik", Georgia, serif;
+    --title-font: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 body { background-color: var(--bg); color: var(--text);
     background-image: radial-gradient(circle at 20% 10%, rgba(255,255,255,0.5), transparent 40%), radial-gradient(circle at 80% 90%, rgba(196,154,44,0.08), transparent 45%); }
 .mobile-header { background: var(--green); border-bottom: 3px solid var(--gold); }
-.mobile-title { color: #fff; font-family: var(--title-font); font-weight: 700; font-size: 24px; letter-spacing: 0.5px; }
+.mobile-title { color: #fff; font-family: var(--title-font); font-weight: 700; font-size: 17px; }
 .menu-btn { background: var(--gold); color: var(--green-dark); }
 .close-sidebar-btn { color: var(--muted); }
 .sidebar { background: var(--surface); border-left: 3px double var(--gold); }
 .sidebar.lang-en { border-left: none; border-right: 3px double var(--gold); }
-.sidebar h2 { color: var(--green); font-family: var(--title-font); font-weight: 700; font-size: 26px; }
+.sidebar h2 { color: var(--green); font-family: var(--title-font); font-weight: 700; font-size: 18px; }
 .sidebar-actions button { background: var(--green); color: #fff; }
 .tree-list { border-right-color: var(--border); }
 .sidebar.lang-en .tree-list { border-left-color: var(--border); }
@@ -138,7 +138,7 @@ body { background-color: var(--bg); color: var(--text);
 .toggle-arrow, .action-icon-btn { color: var(--muted); }
 .root-drop-zone { background: var(--surface-2); border-color: var(--border); color: var(--muted); }
 .container { background: var(--surface); border: 2px solid var(--green); outline: 1px solid var(--gold); outline-offset: -7px; box-shadow: 0 8px 26px rgba(60, 45, 10, 0.15); border-radius: 10px; }
-h1.desktop-only { color: var(--green); font-family: var(--title-font); font-weight: 700; font-size: 48px; line-height: 1.1; }
+h1.desktop-only { color: var(--green); font-family: var(--title-font); font-weight: 700; font-size: 28px; line-height: 1.2; }
 h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); font-size: 18px; margin-top: 2px; font-family: "Segoe UI Symbol", sans-serif; }
 #searchInput { background: #fffdf5; border-color: var(--border); color: var(--text); }
 #searchInput:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(31, 107, 58, 0.18); }
@@ -158,7 +158,7 @@ h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); fon
 #firebaseUserDisplay { color: var(--text) !important; }
 .offline-row button { background: var(--surface); border-color: var(--border); color: var(--text); }
 .color-palette-card { background: var(--surface); border: 2px solid var(--green); }
-.color-palette-card h3 { color: var(--green); font-family: var(--title-font); font-weight: 700; font-size: 26px; }
+.color-palette-card h3 { color: var(--green); font-family: var(--title-font); font-weight: 700; font-size: 18px; }
 #closePaletteBtn, #closeMoveBtn, #closeOfflineBtn, .offline-btns button { background: var(--gold-soft); color: var(--green-dark); border: none; border-radius: 6px; padding: 8px; font-weight: bold; cursor: pointer; }
 .move-folder-btn, .offline-row-item { background: var(--surface-2); color: var(--text); }
 .context-divider { background: var(--border); }
@@ -203,6 +203,115 @@ h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); fon
 #editContentInput { flex: 1; min-height: 50vh; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-size: 14px; white-space: pre; overflow: auto; background: #fffdf5; color: var(--text); resize: vertical; }
 
 /* ==================================================== */
+/* עיצוב פסטל עדין: מנטה רכה, שמנת, אפרסק-זהב */
+html[data-theme="irish"] {
+    --bg: #f7f4ee; --surface: #fffdf9; --surface-2: #f4f1ea; --border: #e8e1d3;
+    --text: #45423b; --muted: #9a9384;
+    --green: #8dbb9d; --green-dark: #557e65; --green-soft: #e8f2eb;
+    --gold: #e8c99a; --gold-soft: #fbf3e6; --chord: #5f9a76;
+}
+html[data-theme="irish"] body { background-image: radial-gradient(circle at 15% 0%, #eef6f0 0, transparent 45%), radial-gradient(circle at 90% 100%, #fbf0e3 0, transparent 50%); }
+html[data-theme="irish"] .mobile-header { background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: 0 2px 10px rgba(120, 110, 90, 0.06); }
+html[data-theme="irish"] .mobile-title { color: var(--green-dark); }
+html[data-theme="irish"] .menu-btn { background: var(--green-soft); color: var(--green-dark); border: 1px solid #d3e6d9; font-weight: 500; border-radius: 20px; }
+html[data-theme="irish"] .sidebar { background: var(--surface); border-left: 1px solid var(--border); }
+html[data-theme="irish"] .sidebar.lang-en { border-right: 1px solid var(--border); }
+html[data-theme="irish"] .sidebar h2 { color: var(--green-dark); }
+html[data-theme="irish"] .sidebar-actions button { background: var(--green); border-radius: 20px; font-weight: 500; }
+html[data-theme="irish"] .tree-item { background: var(--surface-2); border-radius: 10px; }
+html[data-theme="irish"] .container { border: 1px solid var(--border); outline: none; border-radius: 18px; box-shadow: 0 6px 24px rgba(120, 110, 90, 0.08); }
+html[data-theme="irish"] h1.desktop-only { color: var(--green-dark); }
+html[data-theme="irish"] h1.desktop-only::after { color: var(--gold); }
+html[data-theme="irish"] #searchInput { background: #fff; border-radius: 22px; padding-inline: 16px; }
+html[data-theme="irish"] #searchInput:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(141, 187, 157, 0.2); }
+html[data-theme="irish"] #searchBtn { background: var(--green); border-radius: 22px; font-weight: 500; }
+html[data-theme="irish"] .controls button, html[data-theme="irish"] .tools-row > button, html[data-theme="irish"] .tools-row .ctl-group button { background: var(--gold-soft); border: 1px solid #f0e3cc; color: #8a6d45; border-radius: 20px; font-weight: 500; }
+html[data-theme="irish"] #saveBtn { background: var(--green); color: #fff; }
+html[data-theme="irish"] #saveChangesBtn { background: var(--gold); color: #6d5330; }
+html[data-theme="irish"] #songDisplayWrapper { background: #fff; border: 1px solid var(--border); border-radius: 14px; }
+html[data-theme="irish"] #songDisplay.colored .chord { font-weight: 600; }
+html[data-theme="irish"] .lib-switch { border-color: var(--border); border-radius: 20px; }
+html[data-theme="irish"] .lib-switch button.active { background: var(--green); }
+html[data-theme="irish"] .account-toggle { border-radius: 20px; border-color: var(--border); box-shadow: none; }
+html[data-theme="irish"] .toast { background: var(--green-dark); border: none; border-radius: 20px; }
+html[data-theme="irish"] .color-palette-card { border: 1px solid var(--border); border-radius: 18px; }
+/* ==================================================== */
+/* עיצוב מגילה עדין: קלף בהיר, דיו חום רך, גלילים בקצוות */
+html[data-theme="scroll"] {
+    --bg: #efe8da; --surface: #faf5ea; --surface-2: #f3ecdc; --border: #e0d3b8;
+    --text: #4e4233; --muted: #9c8c72;
+    --green: #8a7350; --green-dark: #6b5639; --green-soft: #f0e6d2;
+    --gold: #c9a978; --gold-soft: #f5ecda; --chord: #a0694a;
+}
+html[data-theme="scroll"] body { background-image: radial-gradient(ellipse at 50% 0%, #f7f1e4 0, transparent 60%); }
+html[data-theme="scroll"] .mobile-header { background: var(--surface); border-bottom: 1px solid var(--border); }
+html[data-theme="scroll"] .mobile-title { color: var(--green-dark); }
+html[data-theme="scroll"] .menu-btn { background: transparent; color: var(--green-dark); border: 1px solid var(--border); font-weight: 500; }
+html[data-theme="scroll"] .sidebar { background: var(--surface); border-left: 1px solid var(--border); }
+html[data-theme="scroll"] .sidebar.lang-en { border-right: 1px solid var(--border); }
+html[data-theme="scroll"] .sidebar h2 { color: var(--green-dark); }
+html[data-theme="scroll"] .sidebar-actions button { background: var(--green); font-weight: 500; }
+/* המגילה: הדף עצמו + גליל עץ רך למעלה ולמטה */
+html[data-theme="scroll"] .container { position: relative; border: none; outline: none; border-radius: 4px; margin: 14px 0;
+    background: linear-gradient(90deg, rgba(160,130,80,0.10), transparent 6%, transparent 94%, rgba(160,130,80,0.10)), #fbf6ea;
+    box-shadow: 0 4px 18px rgba(110, 85, 50, 0.10); }
+html[data-theme="scroll"] .container::before, html[data-theme="scroll"] .container::after { content: ""; position: absolute; left: -10px; right: -10px; height: 16px; border-radius: 8px;
+    background: linear-gradient(180deg, #e6d4b2, #cdb68c 50%, #e3d0ac); box-shadow: 0 2px 4px rgba(110,85,50,0.15); }
+html[data-theme="scroll"] .container::before { top: -10px; }
+html[data-theme="scroll"] .container::after { bottom: -10px; }
+html[data-theme="scroll"] h1.desktop-only { color: var(--green-dark); }
+html[data-theme="scroll"] h1.desktop-only::after { content: "~ ❦ ~"; color: var(--gold); font-size: 14px; }
+html[data-theme="scroll"] #searchInput { background: transparent; border: none; border-bottom: 1px solid var(--border); border-radius: 0; }
+html[data-theme="scroll"] #searchInput:focus { box-shadow: none; border-bottom-color: var(--green); }
+html[data-theme="scroll"] #searchBtn { background: transparent; color: var(--green-dark); border: 1px solid var(--border); font-weight: 500; }
+html[data-theme="scroll"] .controls button, html[data-theme="scroll"] .tools-row > button, html[data-theme="scroll"] .tools-row .ctl-group button { background: transparent; border: 1px solid var(--border); color: var(--green-dark); font-weight: 500; }
+html[data-theme="scroll"] #saveBtn { background: var(--green); color: #fff; border: none; }
+html[data-theme="scroll"] #saveChangesBtn { background: var(--gold); color: #fff; border: none; }
+html[data-theme="scroll"] #songDisplayWrapper { background: transparent; border: none; border-top: 1px solid var(--border); border-radius: 0; }
+html[data-theme="scroll"] #songDisplay { color: #4e4233; }
+html[data-theme="scroll"] .lib-switch { border-color: var(--border); }
+html[data-theme="scroll"] .lib-switch button.active { background: var(--green); }
+html[data-theme="scroll"] .account-toggle { box-shadow: none; }
+html[data-theme="scroll"] .toast { background: var(--green-dark); border: none; }
+html[data-theme="scroll"] .color-palette-card { border: 1px solid var(--border); }
+/* ==================================================== */
+/* עיצוב ים: תכלת, כחול רך, חול, קרם */
+html[data-theme="sea"] {
+    --bg: #eef5f6; --surface: #fffdf8; --surface-2: #f5f0e5; --border: #dfe5e2;
+    --text: #36444c; --muted: #8d9aa0;
+    --green: #77afcb; --green-dark: #3f7393; --green-soft: #e4f1f7;
+    --gold: #e6d2a8; --gold-soft: #f8f1e2; --chord: #3d84ad;
+}
+html[data-theme="sea"] body { background-image: linear-gradient(180deg, #e8f3f7 0, #f6f3ea 70%, #f3ead6 100%); }
+html[data-theme="sea"] .mobile-header { background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: 0 2px 10px rgba(70, 110, 130, 0.06); }
+html[data-theme="sea"] .mobile-title { color: var(--green-dark); }
+html[data-theme="sea"] .menu-btn { background: var(--green-soft); color: var(--green-dark); border: 1px solid #cfe3ee; font-weight: 500; border-radius: 20px; }
+html[data-theme="sea"] .sidebar { background: var(--surface); border-left: 1px solid var(--border); }
+html[data-theme="sea"] .sidebar.lang-en { border-right: 1px solid var(--border); }
+html[data-theme="sea"] .sidebar h2 { color: var(--green-dark); }
+html[data-theme="sea"] .sidebar-actions button { background: var(--green); border-radius: 20px; font-weight: 500; }
+html[data-theme="sea"] .tree-item { background: var(--surface-2); border-radius: 10px; }
+html[data-theme="sea"] .container { border: 1px solid var(--border); outline: none; border-radius: 18px; box-shadow: 0 6px 24px rgba(70, 110, 130, 0.08); }
+html[data-theme="sea"] h1.desktop-only { color: var(--green-dark); }
+html[data-theme="sea"] h1.desktop-only::after { content: "〰"; color: var(--green); }
+html[data-theme="sea"] #searchInput { background: #fff; border-radius: 22px; padding-inline: 16px; }
+html[data-theme="sea"] #searchInput:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(119, 175, 203, 0.22); }
+html[data-theme="sea"] #searchBtn { background: var(--green); border-radius: 22px; font-weight: 500; }
+html[data-theme="sea"] .controls button, html[data-theme="sea"] .tools-row > button, html[data-theme="sea"] .tools-row .ctl-group button { background: var(--gold-soft); border: 1px solid #efe2c6; color: #7d6640; border-radius: 20px; font-weight: 500; }
+html[data-theme="sea"] #saveBtn { background: var(--green); color: #fff; }
+html[data-theme="sea"] #saveChangesBtn { background: var(--gold); color: #6a5530; }
+html[data-theme="sea"] #songDisplayWrapper { background: #fff; border: 1px solid var(--border); border-radius: 14px; }
+html[data-theme="sea"] #songDisplay.colored .chord { font-weight: 600; }
+html[data-theme="sea"] .lib-switch { border-color: var(--border); border-radius: 20px; }
+html[data-theme="sea"] .lib-switch button.active { background: var(--green); }
+html[data-theme="sea"] .account-toggle { border-radius: 20px; border-color: var(--border); box-shadow: none; }
+html[data-theme="sea"] .toast { background: var(--green-dark); border: none; border-radius: 20px; }
+html[data-theme="sea"] .color-palette-card { border: 1px solid var(--border); border-radius: 18px; }
+/* בכל העיצובים: צבעי התיקיות מוצגים רכים יותר */
+html[data-theme] .folder-svg { opacity: 0.6; }
+html[data-theme] .tree-item { border-color: transparent !important; }
+
+/* ==================================================== */
 /* מצב לילה: רקע כהה, טקסט בהיר, אקורדים בזהב */
 body.night {
     --bg: #0f1813; --surface: #17231c; --surface-2: #1f2e25; --border: #34503e;
@@ -217,6 +326,12 @@ body.night .container { box-shadow: none; }
 body.night .modal-overlay { background: rgba(0,0,0,0.65); }
 body.night .tree-item { color: var(--text); }
 body.night .toast { background: #22392b; }
+body.night .container { background: var(--surface); }
+body.night .container::before, body.night .container::after { background: #2c3a30; box-shadow: none; }
+body.night .controls button, body.night .tools-row > button, body.night .tools-row .ctl-group button { background: var(--surface-2); color: var(--green-dark); border-color: var(--border); }
+body.night #saveChangesBtn { color: #1b1b12; }
+body.night .mobile-title, body.night .sidebar h2 { color: var(--green-dark); }
+body.night .menu-btn { background: var(--surface-2); color: var(--green-dark); border-color: var(--border); }
 
 /* כללי התאמה לטלפון (מסכים קטנים מ-768 פיקסלים) */
 /* ==================================================== */
@@ -253,3 +368,17 @@ body.night .toast { background: #22392b; }
     #songDisplay { font-size: 13px; padding: 12px; }
     .root-drop-zone { display: none; } /* במובייל אין גרירה עם עכבר, משתמשים בלחיצה או בתפריט */
 }
+/* ==================================================== */
+/* חלון ההגדרות (⚙️) */
+#accountLabel { display: none; }
+.settings-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.settings-section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+.settings-title { font-size: 11px; font-weight: bold; color: var(--muted); margin-bottom: 6px; }
+.theme-picker { display: flex; gap: 6px; }
+.theme-picker button { flex: 1; padding: 8px 4px; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; font-size: 12px; font-weight: bold; color: #444; }
+.theme-picker button.on { border-color: var(--green-dark); }
+.theme-swatch { display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 4px; }
+.theme-swatch span { flex: 1; }
+.account-panel { width: 290px; }
+@media (max-width: 768px) { .account-toggle .toggle-text { display: none; } }
+html body.night { background-image: none; }
