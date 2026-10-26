@@ -38,9 +38,11 @@ Personal chord-sheet app (Hebrew + English songs), UI in Hebrew/RTL:
   List = `window.SHIRON_THEMES` in the inline `<head>` script of index.html (also sets
   `<html data-theme>` before paint; unknown -> `irish`). irish and sea share one structure
   (`html:where([data-theme]:not([data-theme="scroll"]))` rules, low specificity so night mode
-  wins) and differ by one variables line each. Button swatches: `THEME_SWATCH` in app.js.
+  wins) and differ by one variables line each. They are NOT pastel any more (owner: "pleasant
+  colors, the background may be a gradient"): colored gradient header (`--header-bg`, white
+  title), gradient page background (`--page-bg`: irish sage->cream, sea sky->sand). Button swatches: `THEME_SWATCH` in app.js.
   Base variables = the "מזכרת אירית" block; night mode (`body.night`) comes after the themes.
-  The owner wants it GENTLE (pastel, "not a blackjack table").
+  The owner wants it pleasant and gentle ("not a blackjack table").
 - Font: the ORIGINAL system font everywhere ("Segoe UI", Tahoma, ... sans-serif), titles too.
   No Google Fonts (owner asked to go back to the original font).
 

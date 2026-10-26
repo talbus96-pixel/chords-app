@@ -205,20 +205,26 @@ h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); fon
 /* ==================================================== */
 /* עיצובים רכים (אירי, ים): אותו מבנה, רק הצבעים משתנים.
    להוספת עיצוב: שורת משתנים כאן + שם ב-SHIRON_THEMES (index.html) + כפתור נוצר לבד */
-html[data-theme="irish"] { --bg: #f7f4ee; --surface: #fffdf9; --surface-2: #f4f1ea; --border: #e8e1d3; --text: #45423b; --muted: #9a9384;
-    --green: #8dbb9d; --green-dark: #557e65; --green-soft: #e8f2eb; --gold: #e8c99a; --gold-soft: #fbf3e6; --chord: #5f9a76; --tint-a: #eef6f0; --tint-b: #fbf0e3; --btn-text: #8a6d45; }
-html[data-theme="sea"] { --bg: #eef5f6; --surface: #fffdf8; --surface-2: #f5f0e5; --border: #dfe5e2; --text: #36444c; --muted: #8d9aa0;
-    --green: #77afcb; --green-dark: #3f7393; --green-soft: #e4f1f7; --gold: #e6d2a8; --gold-soft: #f8f1e2; --chord: #3d84ad; --tint-a: #e3f1f6; --tint-b: #f5ecd9; --btn-text: #7d6640; }
-html:where([data-theme]:not([data-theme="scroll"])) body { background-image: radial-gradient(circle at 15% 0%, var(--tint-a) 0, transparent 45%), radial-gradient(circle at 90% 100%, var(--tint-b) 0, transparent 50%); }
-html:where([data-theme]:not([data-theme="scroll"])) .mobile-header { background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: 0 2px 10px rgba(90, 90, 90, 0.06); }
-html:where([data-theme]:not([data-theme="scroll"])) .mobile-title { color: var(--green-dark); }
-html:where([data-theme]:not([data-theme="scroll"])) .menu-btn { background: var(--green-soft); color: var(--green-dark); border: 1px solid var(--border); font-weight: 500; border-radius: 20px; }
-html:where([data-theme]:not([data-theme="scroll"])) .sidebar { background: var(--surface); border-left: 1px solid var(--border); }
+/* אירי: ירוק עשב רך, דבש-זהב, שמנת חמה. הרקע: מעבר הדרגתי מירוק מרווה לשמנת */
+html[data-theme="irish"] { --bg: #f1f0e6; --surface: #fffdf7; --surface-2: #f3f1e6; --border: #dfe3d2; --text: #33392f; --muted: #848c7c;
+    --green: #4f9068; --green-dark: #2f6346; --green-soft: #e2eee4; --gold: #d8ae5f; --gold-soft: #f7eed9; --chord: #3e7f58; --btn-text: #6b5326;
+    --page-bg: linear-gradient(170deg, #dbe9dc 0%, #eef2e4 45%, #f7efdc 100%);
+    --header-bg: linear-gradient(100deg, #2f6c4b 0%, #4f9068 100%); }
+/* ים: כחול מים, תכלת שמיים, חול חמים. הרקע: מעבר מהשמיים (למעלה) לחוף (למטה) */
+html[data-theme="sea"] { --bg: #eef4f5; --surface: #fffdf8; --surface-2: #f2f0e8; --border: #d8e3e6; --text: #2f3e47; --muted: #7f929b;
+    --green: #3f8fbc; --green-dark: #24607f; --green-soft: #e0eff7; --gold: #e2c48a; --gold-soft: #f8f0df; --chord: #2c78a6; --btn-text: #6d5428;
+    --page-bg: linear-gradient(180deg, #cfe6f2 0%, #e7f2f4 40%, #f4eedf 75%, #efdfbf 100%);
+    --header-bg: linear-gradient(100deg, #24607f 0%, #3f8fbc 60%, #6db3d4 100%); }
+html:where([data-theme]:not([data-theme="scroll"])) body { background-image: var(--page-bg); }
+html:where([data-theme]:not([data-theme="scroll"])) .mobile-header { background: var(--header-bg); border-bottom: none; box-shadow: 0 2px 12px rgba(30, 50, 40, 0.15); }
+html:where([data-theme]:not([data-theme="scroll"])) .mobile-title { color: #fff; }
+html:where([data-theme]:not([data-theme="scroll"])) .menu-btn { background: rgba(255, 255, 255, 0.18); color: #fff; border: 1px solid rgba(255, 255, 255, 0.4); font-weight: 500; border-radius: 20px; }
+html:where([data-theme]:not([data-theme="scroll"])) .sidebar { background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%); border-left: 1px solid var(--border); }
 html:where([data-theme]:not([data-theme="scroll"])) .sidebar.lang-en { border-right: 1px solid var(--border); }
 html:where([data-theme]:not([data-theme="scroll"])) .sidebar h2 { color: var(--green-dark); }
 html:where([data-theme]:not([data-theme="scroll"])) .sidebar-actions button { background: var(--green); border-radius: 20px; font-weight: 500; }
 html:where([data-theme]:not([data-theme="scroll"])) .tree-item { background: var(--surface-2); border-radius: 10px; }
-html:where([data-theme]:not([data-theme="scroll"])) .container { border: 1px solid var(--border); outline: none; border-radius: 18px; box-shadow: 0 6px 24px rgba(90, 90, 90, 0.08); }
+html:where([data-theme]:not([data-theme="scroll"])) .container { background: rgba(255, 253, 247, 0.92); border: 1px solid var(--border); outline: none; border-radius: 18px; box-shadow: 0 8px 28px rgba(40, 60, 50, 0.12); }
 html:where([data-theme]:not([data-theme="scroll"])) h1.desktop-only { color: var(--green-dark); }
 html:where([data-theme]:not([data-theme="scroll"])) h1.desktop-only::after { color: var(--gold); }
 html:where([data-theme]:not([data-theme="scroll"])) #searchInput { background: #fff; border-radius: 22px; padding-inline: 16px; }

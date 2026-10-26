@@ -1302,13 +1302,15 @@ function applyViewFlags() {
     document.body.classList.toggle("night", nightMode);
     nightModeBtn.classList.toggle("on", nightMode);
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", nightMode ? "#0f1813" : (THEME_SWATCH[currentTheme()] || ["#8dbb9d"])[0]);
+    // הפס העליון של הטלפון בצבע הכותרת של העיצוב
+    const bar = getComputedStyle(document.documentElement).getPropertyValue("--green-dark").trim();
+    if (meta) meta.setAttribute("content", nightMode ? "#0f1813" : (bar || "#2f6346"));
 }
 // ===== בחירת עיצוב (רשימת העיצובים: SHIRON_THEMES ב-index.html, הצבעים: style.css) =====
 const THEMES = (window.SHIRON_THEMES || [["irish", "אירי"]]).map(t => t[0]);
 // צבעי הדוגמית בכפתור: ראשי, משני, רקע (הראשי משמש גם לפס העליון של הטלפון)
 const THEME_SWATCH = {
-    irish: ["#8dbb9d", "#e8c99a", "#fffdf9"], scroll: ["#8a7350", "#c9a978", "#faf5ea"], sea: ["#77afcb", "#e6d2a8", "#fffdf8"]
+    irish: ["#4f9068", "#d8ae5f", "#f7efdc"], scroll: ["#8a7350", "#c9a978", "#faf5ea"], sea: ["#3f8fbc", "#cfe6f2", "#efdfbf"]
 };
 const themePicker = document.getElementById("themePicker");
 (window.SHIRON_THEMES || []).forEach(([key, name]) => {
