@@ -8,7 +8,13 @@
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#1f6b3a">
     <!-- העיצוב שנבחר בהגדרות, לפני שהדף מצויר (בלי הבהוב) -->
-    <script>try { document.documentElement.dataset.theme = ["irish", "scroll", "sea"].indexOf(localStorage.getItem("appTheme")) >= 0 ? localStorage.getItem("appTheme") : "irish"; } catch (e) { document.documentElement.dataset.theme = "irish"; }</script>
+    <script>
+        // העיצובים לבחירה בהגדרות (השם = הצבעים ב-style.css). העיצוב השמור נקבע לפני שהדף מצויר, בלי הבהוב
+        window.SHIRON_THEMES = [["irish", "אירי"], ["sea", "ים"], ["sky", "שמיים"], ["forest", "יער"], ["lemon", "לימון"], ["peach", "אפרסק"],
+            ["sunset", "שקיעה"], ["rose", "ורד"], ["berry", "פטל"], ["lavender", "לבנדר"], ["coffee", "קפה"], ["stone", "אבן"], ["scroll", "מגילה"]];
+        try { var t = localStorage.getItem("appTheme"); document.documentElement.dataset.theme = window.SHIRON_THEMES.some(function (x) { return x[0] === t; }) ? t : "irish"; }
+        catch (e) { document.documentElement.dataset.theme = "irish"; }
+    </script>
     <link rel="icon" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="stylesheet" href="style.css">
@@ -33,11 +39,7 @@
             </div>
             <div class="settings-section">
                 <div class="settings-title">עיצוב</div>
-                <div class="theme-picker">
-                    <button data-theme-pick="irish"><div class="theme-swatch"><span style="background:#8dbb9d"></span><span style="background:#e8c99a"></span><span style="background:#fffdf9"></span></div>אירי</button>
-                    <button data-theme-pick="scroll"><div class="theme-swatch"><span style="background:#8a7350"></span><span style="background:#c9a978"></span><span style="background:#faf5ea"></span></div>מגילה</button>
-                    <button data-theme-pick="sea"><div class="theme-swatch"><span style="background:#77afcb"></span><span style="background:#e6d2a8"></span><span style="background:#fffdf8"></span></div>ים</button>
-                </div>
+                <div class="theme-picker" id="themePicker"></div>
                 <div class="offline-row">
                     <button id="nightModeBtn">🌙 מצב לילה</button>
                     <button id="colorChordsBtn">🎨 אקורדים צבעוניים</button>

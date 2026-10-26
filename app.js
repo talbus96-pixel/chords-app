@@ -1299,11 +1299,29 @@ function applyViewFlags() {
     document.body.classList.toggle("night", nightMode);
     nightModeBtn.classList.toggle("on", nightMode);
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", nightMode ? "#0f1813" : THEME_COLOR[currentTheme()]);
+    if (meta) meta.setAttribute("content", nightMode ? "#0f1813" : (THEME_SWATCH[currentTheme()] || ["#8dbb9d"])[0]);
 }
-// ===== בחירת עיצוב (אירי / מגילה / ים) =====
-const THEMES = ["irish", "scroll", "sea"];
-const THEME_COLOR = { irish: "#8dbb9d", scroll: "#8a7350", sea: "#77afcb" };
+// ===== בחירת עיצוב (רשימת העיצובים: SHIRON_THEMES ב-index.html, הצבעים: style.css) =====
+const THEMES = (window.SHIRON_THEMES || [["irish", "אירי"]]).map(t => t[0]);
+// צבעי הדוגמית בכפתור: ראשי, משני, רקע (הראשי משמש גם לפס העליון של הטלפון)
+const THEME_SWATCH = {
+    irish: ["#8dbb9d", "#e8c99a", "#fffdf9"], sea: ["#77afcb", "#e6d2a8", "#fffdf8"], sky: ["#8fb8e8", "#f5c6d6", "#fdfdff"],
+    forest: ["#7fa58a", "#c9a77f", "#fbfbf6"], lemon: ["#a8c66c", "#f2df7e", "#fffffa"], peach: ["#f0b48f", "#f3d79b", "#fffdf9"],
+    sunset: ["#ee9f8d", "#f6cf8e", "#fffcfa"], rose: ["#e3a3b4", "#f2d3a8", "#fffdfc"], berry: ["#c58fb3", "#b8d4c2", "#fffdfe"],
+    lavender: ["#a99bd1", "#f0c9b8", "#fffdfd"], coffee: ["#b39279", "#d9c3a5", "#fffcf8"], stone: ["#9aa3a8", "#d8d2c8", "#fefefe"],
+    scroll: ["#8a7350", "#c9a978", "#faf5ea"]
+};
+const themePicker = document.getElementById("themePicker");
+(window.SHIRON_THEMES || []).forEach(([key, name]) => {
+    const b = document.createElement("button");
+    b.dataset.themePick = key;
+    const sw = document.createElement("div");
+    sw.className = "theme-swatch";
+    (THEME_SWATCH[key] || []).forEach(c => { const sp = document.createElement("span"); sp.style.background = c; sw.appendChild(sp); });
+    b.appendChild(sw);
+    b.appendChild(document.createTextNode(name));
+    themePicker.appendChild(b);
+});
 function currentTheme() { const t = document.documentElement.dataset.theme; return THEMES.includes(t) ? t : "irish"; }
 function applyTheme(t) {
     if (!THEMES.includes(t)) t = "irish";

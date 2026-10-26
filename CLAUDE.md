@@ -33,11 +33,14 @@ Personal chord-sheet app (Hebrew + English songs), UI in Hebrew/RTL:
 - Personal library: tree of folders and songs, separate Hebrew and English libraries
   (English library flips the sidebar to the left/LTR).
 - Transposition, font size, Google login, cloud sync (Firestore), offline copies, PWA offline.
-- Design: soft/pastel, chosen in ⚙️ settings: `irish` (default: soft mint, cream, peach-gold),
-  `scroll` (light parchment with soft rollers on the song card), `sea` (light blue, blue, sand,
-  cream). Stored in localStorage `appTheme`, set on `<html data-theme="...">` by an inline script
-  in `<head>` (no flash). Base variables = the "מזכרת אירית" block of `style.css`; each theme is
-  a `html[data-theme="x"] ...` block after it; night mode (`body.night`) comes after the themes.
+- Design: soft/pastel, 13 designs chosen in ⚙️ settings. List = `window.SHIRON_THEMES` in the
+  inline `<head>` script of index.html (also sets `<html data-theme>` before paint; unknown ->
+  `irish`). 12 "soft" designs share one structure (`html:where([data-theme]:not([data-theme=
+  "scroll"]))` rules, low specificity so night mode wins) and differ only by one variables line
+  each (irish default, sea, sky, forest, lemon, peach, sunset, rose, berry, lavender, coffee,
+  stone). `scroll` has its own block (parchment + rollers). Button swatches: `THEME_SWATCH` in
+  app.js. To add a design: variables line in style.css + entry in SHIRON_THEMES + THEME_SWATCH.
+  Base variables = the "מזכרת אירית" block; night mode (`body.night`) comes after the themes.
   The owner wants it GENTLE (pastel, "not a blackjack table").
 - Font: the ORIGINAL system font everywhere ("Segoe UI", Tahoma, ... sans-serif), titles too.
   No Google Fonts (owner asked to go back to the original font).
