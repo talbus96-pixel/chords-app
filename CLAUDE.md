@@ -146,7 +146,7 @@ Song screen: the ORIGINAL two buttons "העלה חצי טון (+)" / "הורד �
 Transposition is stored per song (`transpose`, original text kept; "שמור שינויים בשיר" saves it).
 Other features: pick from up to 5 search results ("לא השיר הנכון?"); search inside the library
 (sidebar box, title or lyrics, both libraries); screen stays awake while a song is open (Wake
-Lock); auto-scroll speed 1-10; song editing from the song's ⋮ menu ("✏️ ערוך שיר"); in the 👤
+Lock); auto-scroll speed 1-10; song editing from the song's ⋮ menu ("✏️ ערוך שיר"); in the
 settings panel (the ⚙️ button, top corner; ids still `accountMenu` / `accountPanel`): account
 (login/logout, sync status), design picker + night mode + colored chords, offline copies, backup
 to a JSON file and restore (restore only ADDS what is missing, via `mergeLibraries(current, backup, null)`).
