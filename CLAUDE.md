@@ -134,8 +134,9 @@ offline edits, first-run rescue, no cross-account copy, folder toggle = no write
 **The owner wants the app MINIMAL and calm: more features = more visual load.** Keep the song
 screen clean; put rarely used toggles in the 👤 panel or a ⋮ menu, not above the chords.
 
-Song screen: one row "טון − 0 +" and "A− 13 A+" (the number is a fixed-width label; tapping a
-non-zero transpose number resets to the original), one row "▶ גלילה 🐢 3 🐇", then the song.
+Song screen: the ORIGINAL two buttons "העלה חצי טון (+)" / "הורד חצי טון (-)" + "A− 13 A+"
+(owner rejected a reset-to-original button and a compact "− 0 +" control), one row
+"▶ גלילה 🐢 3 🐇", then the song.
 Transposition is stored per song (`transpose`, original text kept; "שמור שינויים בשיר" saves it).
 Other features: pick from up to 5 search results ("לא השיר הנכון?"); search inside the library
 (sidebar box, title or lyrics, both libraries); screen stays awake while a song is open (Wake

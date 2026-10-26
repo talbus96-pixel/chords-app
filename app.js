@@ -762,7 +762,6 @@ function displayCurrentSong() {
     const isHebrew = /[\u0590-\u05FF]/.test(currentSongData.content);
     songDisplay.style.direction = isHebrew ? "rtl" : "ltr";
     songDisplay.style.textAlign = isHebrew ? "right" : "left";
-    updateTransposeLabel();
     updateWakeLock();
 }
 
@@ -842,13 +841,6 @@ function transposeText(text, steps) {
 }
 
 // שינוי הטון נשמר כהגדרה של השיר (transpose = מספר חצאי טונים). הטקסט המקורי לא משתנה
-const transposeLabel = document.getElementById("transposeLabel");
-function updateTransposeLabel() {
-    const t = (currentSongData && currentSongData.transpose) || 0;
-    transposeLabel.innerText = (t > 0 ? "+" : "") + t;
-    transposeLabel.classList.toggle("changed", t !== 0);
-}
-
 function changeTranspose(delta) {
     if (!currentSongData) return;
     let t = (currentSongData.transpose || 0) + delta;
@@ -860,10 +852,6 @@ function changeTranspose(delta) {
 
 document.getElementById("transposeUp").addEventListener("click", () => changeTranspose(1));
 document.getElementById("transposeDown").addEventListener("click", () => changeTranspose(-1));
-transposeLabel.addEventListener("click", () => {
-    if (!currentSongData || !currentSongData.transpose) return;
-    changeTranspose(-currentSongData.transpose);
-});
 
 // גודל גופן של השיר – נשמר במכשיר כדי שיישאר גם אחרי סגירת האפליקציה
 const FONT_MIN = 10, FONT_MAX = 32;

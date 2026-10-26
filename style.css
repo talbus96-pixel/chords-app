@@ -167,12 +167,9 @@ h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); fon
 
 /* ==================================================== */
 /* טון, גופן, גלילה, תוצאות חיפוש, עריכה */
-.controls { align-items: center; }
 .ctl-group { display: flex; align-items: center; gap: 4px; }
-.ctl-name { font-size: 13px; font-weight: bold; color: var(--muted); margin-inline-end: 2px; }
-.controls .ctl-group button, .tools-row .ctl-group button { flex: none; min-width: 40px; padding: 8px 6px; font-size: 15px; }
-#transposeLabel, #fontSizeLabel, #scrollSpeedLabel { display: inline-block; width: 30px; text-align: center; font-size: 13px; font-weight: bold; color: var(--muted); direction: ltr; }
-#transposeLabel.changed { color: var(--gold); cursor: pointer; text-decoration: underline dotted; }
+.tools-row .ctl-group button { flex: none; min-width: 40px; padding: 8px 6px; font-size: 15px; }
+#scrollSpeedLabel { display: inline-block; width: 30px; text-align: center; font-size: 13px; font-weight: bold; color: var(--muted); }
 .tools-row { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; }
 .tools-row > button { padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;
     background: var(--surface-2); color: var(--green-dark); border: 1px solid var(--border); }
