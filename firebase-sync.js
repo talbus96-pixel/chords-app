@@ -45,9 +45,8 @@ window.markPendingSync = () => {
     try { localStorage.setItem(pendingKey(auth.currentUser.uid), String(Date.now())); } catch (e) {}
 };
 // הבסיס = הספרייה כפי שהענן מכיר אותה. משמש למיזוג (לדעת מה השתנה במכשיר ומה נמחק)
-// sl = רשימות ההופעה (בבסיס ישן אין אותן - המיזוג מסתדר גם בלי)
-function saveBase(uid, he, en, sl) {
-    try { localStorage.setItem(baseKey(uid), JSON.stringify({ he, en, sl })); } catch (e) {}
+function saveBase(uid, he, en) {
+    try { localStorage.setItem(baseKey(uid), JSON.stringify({ he, en })); } catch (e) {}
 }
 function readBase(uid) {
     try {
@@ -127,10 +126,9 @@ export async function saveLibraryToCloud() {
         await setDoc(docRef, {
             libraryData: libs.he,
             libraryDataEn: libs.en,
-            setLists: libs.sl,
             lastUpdated: new Date().toISOString()
         });
-        saveBase(uid, libs.he, libs.en, libs.sl);
+        saveBase(uid, libs.he, libs.en);
         // מוחקים את הסימון רק אם לא נעשה שינוי חדש בזמן שהכתיבה הזו הייתה בדרך
         if (getPending(uid) === pendingAtStart) { try { localStorage.removeItem(pendingKey(uid)); } catch (e) {} }
         setSyncError("");
@@ -173,28 +171,26 @@ function startCloudSync(user) {
             const d = snap.data();
             const heOk = validLib(d.libraryData);
             const enOk = validLib(d.libraryDataEn);
-            const slOk = validLib(d.setLists); // מסמך מגרסה ישנה: אין עדיין רשימות הופעה
             let he = heOk ? d.libraryData : fallbackLib("he");
             let en = enOk ? d.libraryDataEn : fallbackLib("en");
-            let sl = slOk ? d.setLists : fallbackLib("sl");
             if (pending) {
                 // ממזגים את מה שנשמר במכשיר בזמן שלא היה חיבור, במקום למחוק אותו
-                const merged = window.mergeLibraries({ he, en, sl }, window.getLibrariesForCloud(), readBase(user.uid));
-                he = merged.he; en = merged.en; sl = merged.sl;
+                const merged = window.mergeLibraries({ he, en }, window.getLibrariesForCloud(), readBase(user.uid));
+                he = merged.he; en = merged.en;
             }
-            window.applyLibrariesFromCloud(he, en, sl);
+            window.applyLibrariesFromCloud(he, en);
             cloudReady = confirmed;
             if (confirmed) { clearTimeout(readyCheckTimer); setSyncError(""); }
-            if (confirmed && !pending && heOk && enOk && slOk) saveBase(user.uid, d.libraryData, d.libraryDataEn, d.setLists);
+            if (confirmed && !pending && heOk && enOk) saveBase(user.uid, d.libraryData, d.libraryDataEn);
             setStatus(cloudReady ? "☁️✓" : "⏳");
             // חסרה ספרייה (מסמך מגרסה ישנה), או שמיזגנו שינויים מהמכשיר: כותבים לענן, רק אחרי אישור שרת
-            if (confirmed && (pending || !(heOk && enOk && slOk))) saveLibraryToCloud();
+            if (confirmed && (pending || !(heOk && enOk))) saveLibraryToCloud();
         } else if (confirmed) {
             // השרת אישר שאין עדיין מסמך למשתמש הזה: יוצרים אותו
             cloudReady = true;
             clearTimeout(readyCheckTimer);
             setSyncError("");
-            window.applyLibrariesFromCloud(fallbackLib("he"), fallbackLib("en"), fallbackLib("sl"));
+            window.applyLibrariesFromCloud(fallbackLib("he"), fallbackLib("en"));
             saveLibraryToCloud();
         }
         // מסמך לא קיים + נתוני מטמון בלבד = כנראה אין אינטרנט. לא עושים כלום.

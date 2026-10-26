@@ -166,19 +166,19 @@ h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); fon
 .context-menu li:hover, .move-folder-btn:hover:not(:disabled) { background: var(--green-soft); }
 
 /* ==================================================== */
-/* טון, כלים, תוצאות חיפוש, רשימות הופעה, עריכה */
-.transpose-group, .speed-group { display: flex; align-items: center; gap: 6px; }
-.transpose-group { flex: 2; min-width: 240px; }
-.controls .transpose-group button { flex: 1; min-width: 0; }
-#transposeLabel { flex: 0.8; font-size: 13px; direction: ltr; }
-#transposeLabel.changed { background: var(--gold); color: #fff; }
-.tools-row { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: nowrap; }
-.tools-row button { flex: 1; min-width: 0; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;
+/* טון, גופן, גלילה, תוצאות חיפוש, עריכה */
+.controls { align-items: center; }
+.ctl-group { display: flex; align-items: center; gap: 4px; }
+.ctl-name { font-size: 13px; font-weight: bold; color: var(--muted); margin-inline-end: 2px; }
+.controls .ctl-group button, .tools-row .ctl-group button { flex: none; min-width: 40px; padding: 8px 6px; font-size: 15px; }
+#transposeLabel, #fontSizeLabel, #scrollSpeedLabel { display: inline-block; width: 30px; text-align: center; font-size: 13px; font-weight: bold; color: var(--muted); direction: ltr; }
+#transposeLabel.changed { color: var(--gold); cursor: pointer; text-decoration: underline dotted; }
+.tools-row { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; }
+.tools-row > button { padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;
     background: var(--surface-2); color: var(--green-dark); border: 1px solid var(--border); }
 .tools-row button.on { background: var(--green); color: #fff; border-color: var(--green); }
-.tools-row .speed-group { gap: 3px; }
-.tools-row .speed-group button { flex: none; min-width: 32px; padding: 8px 4px; }
-#scrollSpeedLabel { min-width: 18px; text-align: center; font-weight: bold; color: var(--muted); font-size: 13px; }
+.tools-row .ctl-group button { border-radius: 8px; cursor: pointer; background: var(--surface-2); border: 1px solid var(--border); }
+.offline-row button.on { background: var(--green); color: #fff; border-color: var(--green); }
 
 #songDisplay.colored .chord { color: var(--chord); font-weight: bold; }
 :root { --chord: #1f6b3a; }
@@ -188,23 +188,13 @@ h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); fon
 .result-item { text-align: start; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; font-size: 13px; }
 .result-item.current { border-color: var(--green); background: var(--green-soft); }
 
-.setlist-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 6px; border-radius: 8px; background: var(--green-soft); border: 1px solid var(--green); }
-.setlist-bar button { padding: 8px 10px; border-radius: 6px; border: none; background: var(--green); color: #fff; font-weight: bold; cursor: pointer; }
-.setlist-bar button:disabled { opacity: 0.35; cursor: default; }
-#setlistExitBtn { background: transparent; color: var(--muted); }
-#setlistPos { flex: 1; text-align: center; font-weight: bold; font-size: 13px; color: var(--green-dark); unicode-bidi: plaintext; }
 
-.sidebar-actions { display: flex; flex-direction: column; gap: 6px; }
-#openSetlistsBtn { background: var(--gold); color: #fff; }
 .lib-search { margin-bottom: 10px; }
 #libSearchInput { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fffdf5; color: var(--text); font-size: 14px; }
 .lib-search-results { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
 .lib-search-item { text-align: start; padding: 8px 10px; border: none; border-radius: 6px; background: var(--surface-2); color: var(--text); cursor: pointer; font-size: 14px; }
 .lib-search-path { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-.setlist-row { display: flex; align-items: center; gap: 4px; }
-.setlist-row .setlist-name { flex: 1; text-align: start; padding: 10px 12px; background: var(--surface-2); color: var(--text); border: none; border-radius: 6px; cursor: pointer; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.setlist-row .icon-btn { padding: 8px; background: none; border: none; cursor: pointer; font-size: 14px; color: var(--muted); }
 .modal-btns { display: flex; gap: 6px; flex-wrap: wrap; }
 .modal-btns button { flex: 1; padding: 9px; border-radius: 6px; border: none; background: var(--gold-soft); color: var(--green-dark); font-weight: bold; cursor: pointer; }
 .modal-btns button.primary { background: var(--green); color: #fff; }

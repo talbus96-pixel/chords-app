@@ -1,4 +1,4 @@
-# ChordsApp — instructions for Claude (read fully before touching anything)
+# Shiron (formerly ChordsApp) — instructions for Claude (read fully before touching anything)
 
 This repo (`talbus96-pixel/chords-app`) IS the app. Its root is served as-is by GitHub Pages:
 **https://talbus96-pixel.github.io/chords-app/**. A commit to `main` goes live in ~1-2 minutes.
@@ -46,7 +46,7 @@ repo root (= website):
   sw.js             <- service worker: network-first for own files, cache-first for
                        gstatic firebasejs + Google Fonts. Bump CACHE ("chords-vN") when
                        changing it. Each file is cached separately (a 404 must not break install).
-  manifest.webmanifest (installed name: "ChordsApp"), icons/icon-192.png, icons/icon-512.png
+  manifest.webmanifest (app name: "Shiron", also in <title> and headers), icons/icon-192.png, icons/icon-512.png
   icons/source/logo.svg      <- current logo (green "C" + gold note on cream, chosen option "4A")
   icons/alt-option-3/        <- owner's second choice (guitar in gold ring), kept in case they switch
   CLAUDE.md (this file)
@@ -72,23 +72,20 @@ Library tree: `{ id, type: "folder"|"file", name (folder) / title (song), color,
 content, source, children: [...] }`. Root `id: "root"`. Two libraries `libs.he`, `libs.en`;
 `myLibrary` = active one (`activeLang`, localStorage `activeLibLang`). Songs may have `transpose`
 (semitones, -11..11): `content` always stays the ORIGINAL text, the display applies `transpose`.
-Set lists = third pseudo-library `libs.sl`: root whose children are
-`{ id, type: "setlist", name, songIds: [...] }` (ids of songs in he/en; deleted songs are skipped).
-Song language =
-Hebrew-letter regex on title+content (`songLang`). Folder colors: `PRESET_COLORS` (Irish
+Song language = Hebrew-letter regex on title+content (`songLang`). Folder colors: `PRESET_COLORS` (Irish
 palette), `DEFAULT_FOLDER_COLOR` = `#1f6b3a`.
 
 localStorage (per origin):
-- `chordLibraryData` / `_en` / `_sl` — guest libraries + set lists = the active offline copy.
-- `chordLibraryData_<uid>` / `_en` / `_sl` — local mirror of the logged-in user.
+- `chordLibraryData` / `_en` — guest libraries = the active offline copy.
+- `chordLibraryData_<uid>` / `_en` — local mirror of the logged-in user.
 - `offlineCopies` (max 5), `offlineActiveId` (set + not logged in => read-only mode).
 - `pendingSync_<uid>` — timestamp of a local change not yet acknowledged by the cloud.
 - `cloudBase_<uid>` — last library known to be in the cloud (base for 3-way merge).
 - `songFontSize`, `activeLibLang`, `scrollSpeed` (1-10), `colorChords` / `nightMode` ("1"/"0").
 
 Firestore: `users_libraries/<uid>` with `libraryData` (he), `libraryDataEn` (en),
-`setLists` (sl, added Oct 2026; a doc without it is filled from the local mirror and rewritten),
-`lastUpdated`. `mergeLibraries` merges he/en/sl; FIELDS include `transpose` and `songIds`. Rules: read/write only if `request.auth.uid == userId`.
+`lastUpdated`. `mergeLibraries` FIELDS include `transpose`. (A `setLists` field existed briefly in
+Oct 2026; set lists were removed and the next write drops it.) Rules: read/write only if `request.auth.uid == userId`.
 
 ## 4. Cloud sync rules (do not break)
 
@@ -134,14 +131,18 @@ offline edits, first-run rescue, no cross-account copy, folder toggle = no write
 
 ## 7. Features and ideas
 
-Built (approved Oct 2026): pick from up to 5 search results; search inside the library (title or
-lyrics, both libraries); screen stays awake while a song is open (Wake Lock); auto-scroll with
-speed 1-10; colored chords (toggle); night mode (toggle, `body.night` overrides the theme
-variables); transposition stored per song (`transpose`, original kept, "↺" resets); manual song
-editing (title + original text); set lists (🎤 in the sidebar, "הוסף לרשימת הופעה" in a song's ⋮
-menu, prev/next bar while playing); backup to a JSON file + restore (restore only ADDS what is
-missing, via `mergeLibraries(current, backup, null)`).
+**The owner wants the app MINIMAL and calm: more features = more visual load.** Keep the song
+screen clean; put rarely used toggles in the 👤 panel or a ⋮ menu, not above the chords.
 
-Not wanted: chord diagrams. Postponed (owner unsure): share a song. Owner may rename the app.
+Song screen: one row "טון − 0 +" and "A− 13 A+" (the number is a fixed-width label; tapping a
+non-zero transpose number resets to the original), one row "▶ גלילה 🐢 3 🐇", then the song.
+Transposition is stored per song (`transpose`, original text kept; "שמור שינויים בשיר" saves it).
+Other features: pick from up to 5 search results ("לא השיר הנכון?"); search inside the library
+(sidebar box, title or lyrics, both libraries); screen stays awake while a song is open (Wake
+Lock); auto-scroll speed 1-10; song editing from the song's ⋮ menu ("✏️ ערוך שיר"); in the 👤
+panel: night mode (`body.night` overrides theme variables), colored chords, backup to a JSON file
+and restore (restore only ADDS what is missing, via `mergeLibraries(current, backup, null)`).
+
+Removed at the owner's request: set lists. Not wanted: chord diagrams. Postponed: share a song.
 Known: in Hebrew (RTL) songs a chord ending in "#" at the end of a chord line shows as "#F"
 (pre-existing bidi issue, not fixed yet).

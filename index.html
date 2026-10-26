@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-signin-client_id" content="678717011887-3gh7chfl1fc8j3d10g0fma01h4qltnfb.apps.googleusercontent.com">
-    <title>ChordsApp</title>
+    <title>Shiron</title>
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#1f6b3a">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,6 +31,10 @@
                 <button id="manageOfflineBtn">🗂️ עותקי אופליין</button>
             </div>
             <div class="offline-row">
+                <button id="nightModeBtn">🌙 מצב לילה</button>
+                <button id="colorChordsBtn">🎨 אקורדים צבעוניים</button>
+            </div>
+            <div class="offline-row">
                 <button id="exportBackupBtn">💾 גיבוי לקובץ</button>
                 <button id="importBackupBtn">📂 שחזור מגיבוי</button>
                 <input type="file" id="importBackupInput" accept=".json,application/json" class="hidden">
@@ -42,7 +46,7 @@
 
     <div class="mobile-header">
         <button id="menuToggleBtn" class="menu-btn">☰ ספרייה</button>
-        <span class="mobile-title">האקורדים שלי 🎸</span>
+        <span class="mobile-title">Shiron 🎸</span>
     </div>
 
     <div class="app-layout">
@@ -61,7 +65,6 @@
             </div>
             <div class="sidebar-actions">
                 <button id="addFolderBtnRoot">➕ תיקייה חדשה</button>
-                <button id="openSetlistsBtn">🎤 רשימות הופעה</button>
             </div>
             <div class="lib-search">
                 <input type="search" id="libSearchInput" placeholder="🔍 חפש בספרייה (שם או מילים)...">
@@ -78,7 +81,7 @@
         <!-- אזור מרכזי -->
         <main class="main-content">
             <div class="container">
-                <h1 class="desktop-only">האקורדים שלי 🎸</h1>
+                <h1 class="desktop-only">Shiron 🎸</h1>
                 
                 <div class="search-area">
                     <input type="text" id="searchInput" placeholder="חפש שיר (לחץ Enter)...">
@@ -86,12 +89,13 @@
                 </div>
 
                 <div class="controls">
-                    <div class="transpose-group">
-                        <button id="transposeDown" title="הורד חצי טון">− ½ טון</button>
-                        <button id="transposeLabel" title="חזרה לטון המקורי">טון מקורי</button>
-                        <button id="transposeUp" title="העלה חצי טון">+ ½ טון</button>
+                    <div class="ctl-group">
+                        <span class="ctl-name">טון</span>
+                        <button id="transposeDown" title="הורד חצי טון">−</button>
+                        <span id="transposeLabel" title="לחץ כדי לחזור לטון המקורי">0</span>
+                        <button id="transposeUp" title="העלה חצי טון">+</button>
                     </div>
-                    <div class="font-size-group">
+                    <div class="ctl-group font-size-group">
                         <button id="fontSmallerBtn" title="הקטן גופן">A−</button>
                         <span id="fontSizeLabel"></span>
                         <button id="fontBiggerBtn" title="הגדל גופן">A+</button>
@@ -102,24 +106,15 @@
 
                 <div class="tools-row">
                     <button id="autoScrollBtn">▶ גלילה</button>
-                    <div class="speed-group">
+                    <div class="ctl-group">
                         <button id="scrollSlowerBtn" title="לאט יותר">🐢</button>
                         <span id="scrollSpeedLabel"></span>
                         <button id="scrollFasterBtn" title="מהר יותר">🐇</button>
                     </div>
-                    <button id="editSongBtn">✏️ עריכה</button>
-                    <button id="colorChordsBtn">🎨 אקורדים</button>
-                    <button id="nightModeBtn">🌙 לילה</button>
                 </div>
 
                 <div id="sourceInfo" class="hidden"></div>
                 <div id="searchResults" class="search-results hidden"></div>
-                <div id="setlistBar" class="setlist-bar hidden">
-                    <button id="setlistPrevBtn">→ הקודם</button>
-                    <span id="setlistPos"></span>
-                    <button id="setlistNextBtn">הבא ←</button>
-                    <button id="setlistExitBtn" title="יציאה מהרשימה">✕</button>
-                </div>
                 
                 <div id="songDisplayWrapper">
                     <div id="songDisplay">
@@ -173,15 +168,6 @@
                 <button id="editSaveBtn" class="primary">💾 שמור</button>
                 <button id="editCancelBtn">ביטול</button>
             </div>
-        </div>
-    </div>
-
-    <!-- מודאל רשימות הופעה -->
-    <div id="setlistModal" class="modal-overlay hidden">
-        <div class="color-palette-card move-card">
-            <h3 id="setlistModalTitle">רשימות הופעה</h3>
-            <div id="setlistModalBody" class="move-folder-list"></div>
-            <div class="modal-btns" id="setlistModalBtns"></div>
         </div>
     </div>
 
