@@ -1,11 +1,14 @@
 // Service worker: מאפשר להתקין את האתר כאפליקציה מכרום, ולפתוח אותו גם בלי אינטרנט.
 // הקבצים של האפליקציה נטענים קודם מהרשת (כדי שעדכונים יופיעו מיד), ורק אם אין רשת - מהעותק השמור.
-const CACHE = "chords-v2";
+const CACHE = "chords-v3";
 const CORE = ["./", "./index.html", "./style.css", "./app.js", "./firebase-sync.js",
     "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
-    event.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
+    // כל קובץ נשמר בנפרד: קובץ אחד חסר לא מפיל את כל ההתקנה
+    event.waitUntil(caches.open(CACHE)
+        .then((c) => Promise.all(CORE.map((u) => c.add(u).catch(() => {}))))
+        .then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (event) => {

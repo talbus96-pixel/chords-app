@@ -20,8 +20,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-// באפליקציית האנדרואיד: חיבור "long polling" לענן, שעובד גם כשהחיבור הרגיל נתקע (שעון חול שלא נגמר)
-const db = initializeFirestore(app, isCapacitorNative() ? { experimentalForceLongPolling: true } : {});
+// חיבור "long polling" לענן: עובד גם ברשתות/סינונים שתוקעים את החיבור הרגיל
+// (שעון חול שלא נגמר / "client is offline" למרות שיש אינטרנט)
+const db = initializeFirestore(app, { experimentalForceLongPolling: true });
 const provider = new GoogleAuthProvider();
 
 const GUEST_KEY = "chordLibraryData";
