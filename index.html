@@ -10,9 +10,10 @@
     <!-- העיצוב שנבחר בהגדרות, לפני שהדף מצויר (בלי הבהוב) -->
     <script>
         // העיצובים לבחירה בהגדרות (השם = הצבעים ב-style.css). העיצוב השמור נקבע לפני שהדף מצויר, בלי הבהוב
-        window.SHIRON_THEMES = [["irish", "אירי"], ["scroll", "מגילה"], ["sea", "ים"]];
-        try { var t = localStorage.getItem("appTheme"); document.documentElement.dataset.theme = window.SHIRON_THEMES.some(function (x) { return x[0] === t; }) ? t : "irish"; }
-        catch (e) { document.documentElement.dataset.theme = "irish"; }
+        // ברירת המחדל (מי שעוד לא בחר): מגילה
+        window.SHIRON_THEMES = [["scroll", "מגילה"], ["irish", "אירי"], ["sea", "ים"]];
+        try { var t = localStorage.getItem("shironTheme"); document.documentElement.dataset.theme = window.SHIRON_THEMES.some(function (x) { return x[0] === t; }) ? t : "scroll"; }
+        catch (e) { document.documentElement.dataset.theme = "scroll"; }
     </script>
     <link rel="icon" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -53,7 +54,7 @@
                 <div class="offline-row">
                     <button id="exportBackupBtn">💾 גיבוי לקובץ</button>
                     <button id="importBackupBtn">📂 שחזור מגיבוי</button>
-                    <input type="file" id="importBackupInput" accept=".json,application/json" class="hidden">
+                    <input type="file" id="importBackupInput" accept=".pdf,.docx,.json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/json" class="hidden">
                 </div>
             </div>
         </div>
@@ -179,6 +180,19 @@
                 <button id="editSaveBtn" class="primary">💾 שמור</button>
                 <button id="editCancelBtn">ביטול</button>
             </div>
+        </div>
+    </div>
+
+    <!-- מודאל בחירת סוג קובץ הגיבוי -->
+    <div id="exportModal" class="modal-overlay hidden">
+        <div class="color-palette-card">
+            <h3>גיבוי לקובץ</h3>
+            <div class="edit-hint">כל ספרייה ותיקייה בכותרת משלה, וכל שיר בעמוד משלו. אפשר לשחזר מהקובץ דרך "שחזור מגיבוי".</div>
+            <div class="modal-btns export-btns">
+                <button id="exportPdfBtn" class="primary">📄 PDF</button>
+                <button id="exportDocxBtn" class="primary">📝 Word</button>
+            </div>
+            <div class="modal-btns"><button id="exportCancelBtn">ביטול</button></div>
         </div>
     </div>
 

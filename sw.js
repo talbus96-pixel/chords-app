@@ -1,6 +1,6 @@
 // Service worker: מאפשר להתקין את האתר כאפליקציה מכרום, ולפתוח אותו גם בלי אינטרנט.
 // הקבצים של האפליקציה נטענים קודם מהרשת (כדי שעדכונים יופיעו מיד), ורק אם אין רשת - מהעותק השמור.
-const CACHE = "chords-v11";
+const CACHE = "chords-v12";
 const CORE = ["./", "./index.html", "./style.css", "./app.js", "./firebase-sync.js",
     "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"];
 

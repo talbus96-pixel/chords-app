@@ -1307,31 +1307,25 @@ function applyViewFlags() {
     if (meta) meta.setAttribute("content", nightMode ? "#0f1813" : (bar || "#2f6346"));
 }
 // ===== בחירת עיצוב (רשימת העיצובים: SHIRON_THEMES ב-index.html, הצבעים: style.css) =====
-const THEMES = (window.SHIRON_THEMES || [["irish", "אירי"]]).map(t => t[0]);
-// צבעי הדוגמית בכפתור: ראשי, משני, רקע (הראשי משמש גם לפס העליון של הטלפון)
-const THEME_SWATCH = {
-    irish: ["#4f9068", "#d8ae5f", "#f7efdc"], scroll: ["#8a7350", "#c9a978", "#faf5ea"], sea: ["#3f8fbc", "#cfe6f2", "#efdfbf"]
-};
+// ברירת המחדל: מגילה. הבחירה נשמרת רק כשהמשתמש לוחץ על עיצוב
+const THEMES = (window.SHIRON_THEMES || [["scroll", "מגילה"]]).map(t => t[0]);
+const DEFAULT_THEME = "scroll";
 const themePicker = document.getElementById("themePicker");
 (window.SHIRON_THEMES || []).forEach(([key, name]) => {
     const b = document.createElement("button");
     b.dataset.themePick = key;
-    const sw = document.createElement("div");
-    sw.className = "theme-swatch";
-    (THEME_SWATCH[key] || []).forEach(c => { const sp = document.createElement("span"); sp.style.background = c; sw.appendChild(sp); });
-    b.appendChild(sw);
-    b.appendChild(document.createTextNode(name));
+    b.innerText = name;
     themePicker.appendChild(b);
 });
-function currentTheme() { const t = document.documentElement.dataset.theme; return THEMES.includes(t) ? t : "irish"; }
-function applyTheme(t) {
-    if (!THEMES.includes(t)) t = "irish";
+function currentTheme() { const t = document.documentElement.dataset.theme; return THEMES.includes(t) ? t : DEFAULT_THEME; }
+function applyTheme(t, save) {
+    if (!THEMES.includes(t)) t = DEFAULT_THEME;
     document.documentElement.dataset.theme = t;
-    try { localStorage.setItem("appTheme", t); } catch (e) {}
+    if (save) { try { localStorage.setItem("shironTheme", t); } catch (e) {} }
     document.querySelectorAll("[data-theme-pick]").forEach(b => b.classList.toggle("on", b.dataset.themePick === t));
     applyViewFlags();
 }
-document.querySelectorAll("[data-theme-pick]").forEach(b => b.addEventListener("click", () => applyTheme(b.dataset.themePick)));
+document.querySelectorAll("[data-theme-pick]").forEach(b => b.addEventListener("click", () => applyTheme(b.dataset.themePick, true)));
 
 colorChordsBtn.addEventListener("click", () => { colorChords = !colorChords; writeFlag("colorChords", colorChords); applyViewFlags(); });
 nightModeBtn.addEventListener("click", () => { nightMode = !nightMode; writeFlag("nightMode", nightMode); applyViewFlags(); });
@@ -1373,20 +1367,108 @@ document.getElementById("editSaveBtn").addEventListener("click", () => {
     if (libSearchInput.value) renderLibSearch();
 });
 
-// ===== גיבוי לקובץ ושחזור =====
-document.getElementById("exportBackupBtn").addEventListener("click", () => {
+// ===== גיבוי לקובץ (PDF או Word) ושחזור =====
+// השרת בונה את הקובץ: כותרת לכל ספרייה ותיקייה, כל שיר בעמוד משלו (עם הטון השמור).
+// נתוני הספרייה נשמרים בתוך הקובץ כדי ש"שחזור מגיבוי" יוכל לקרוא אותו
+const exportModal = document.getElementById("exportModal");
+
+function exportLines(song) {
+    const text = song.transpose ? transposeText(song.content || "", song.transpose) : (song.content || "");
+    return text.split("\n").map(line => isChordLine(line)
+        ? { text: line.replace(/(\S)(\s*)$/, "$1‎$2"), chord: true }  // כמו במסך: "#" בסוף שורה נשאר צמוד לאקורד
+        : { text: line, chord: false });
+}
+
+function exportItems(node) {
+    return (node.children || []).map(c => c.type === "folder"
+        ? { type: "folder", name: c.name || "", children: exportItems(c) }
+        : { type: "song", title: c.title || "", rtl: /[֐-׿]/.test(c.content || ""), lines: exportLines(c) });
+}
+
+async function exportBackup(format) {
+    exportModal.classList.add("hidden");
     const data = window.getLibrariesForCloud();
-    const backup = { app: "Shiron", kind: "backup", version: 1, exportedAt: new Date().toISOString(), he: data.he, en: data.en };
-    const blob = new Blob([JSON.stringify(backup, null, 1)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "Shiron-backup-" + new Date().toISOString().slice(0, 10) + ".json";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-    showToast("💾 קובץ הגיבוי ירד (" + (countSongs(data.he) + countSongs(data.en)) + " שירים)");
+    const songs = countSongs(data.he) + countSongs(data.en);
+    if (!songs) { showToast("אין עדיין שירים לגבות"); return; }
+    const doc = {
+        format, title: "Shiron",
+        libraries: [{ name: "הספרייה העברית", items: exportItems(data.he) }, { name: "הספרייה האנגלית", items: exportItems(data.en) }],
+        backup: { app: "Shiron", kind: "backup", version: 1, exportedAt: new Date().toISOString(), he: data.he, en: data.en }
+    };
+    showToast("⏳ מכין את קובץ הגיבוי (" + songs + " שירים)...");
+    try {
+        const res = await fetch(SCRAPER_URL + "/export", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(doc) });
+        if (!res.ok) { let m = ""; try { m = (await res.json()).error; } catch (e) {} throw new Error(m || ("שגיאה " + res.status)); }
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "Shiron-backup-" + new Date().toISOString().slice(0, 10) + (format === "docx" ? ".docx" : ".pdf");
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+        showToast("💾 קובץ הגיבוי ירד (" + songs + " שירים)");
+    } catch (err) {
+        showToast(navigator.onLine === false ? "📴 צריך אינטרנט כדי ליצור קובץ גיבוי" : "❌ לא הצלחתי ליצור את הקובץ: " + err.message);
+    }
+}
+
+document.getElementById("exportBackupBtn").addEventListener("click", () => {
+    accountPanel.classList.add("hidden");
+    exportModal.classList.remove("hidden");
 });
+document.getElementById("exportPdfBtn").addEventListener("click", () => exportBackup("pdf"));
+document.getElementById("exportDocxBtn").addEventListener("click", () => exportBackup("docx"));
+document.getElementById("exportCancelBtn").addEventListener("click", () => exportModal.classList.add("hidden"));
+
+// קורא את נתוני השחזור מקובץ גיבוי: PDF / Word שנוצרו באפליקציה, או קובץ JSON ישן
+const BACKUP_BEGIN = "SHIRON-BACKUP-V1:", BACKUP_END = ":END-SHIRON-BACKUP";
+
+function backupFromMarker(text) {
+    const i = text.indexOf(BACKUP_BEGIN);
+    if (i < 0) return null;
+    const j = text.indexOf(BACKUP_END, i);
+    if (j < 0) return null;
+    const bin = atob(text.slice(i + BACKUP_BEGIN.length, j));
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+// קובץ Word הוא zip: מוצאים בו את word/document.xml ופותחים אותו (גם אם נשמר מחדש ב-Word)
+async function docxDocumentXml(buf) {
+    const v = new DataView(buf);
+    let end = -1;
+    for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 70000); i--) {
+        if (v.getUint32(i, true) === 0x06054b50) { end = i; break; }
+    }
+    if (end < 0) return null;
+    let p = v.getUint32(end + 16, true);
+    const count = v.getUint16(end + 10, true);
+    for (let n = 0; n < count; n++) {
+        const method = v.getUint16(p + 10, true), size = v.getUint32(p + 20, true);
+        const nameLen = v.getUint16(p + 28, true), extraLen = v.getUint16(p + 30, true), commentLen = v.getUint16(p + 32, true);
+        const local = v.getUint32(p + 42, true);
+        const name = new TextDecoder().decode(new Uint8Array(buf, p + 46, nameLen));
+        if (name === "word/document.xml") {
+            const start = local + 30 + v.getUint16(local + 26, true) + v.getUint16(local + 28, true);
+            const data = new Uint8Array(buf, start, size);
+            if (method === 0) return new TextDecoder().decode(data);
+            const out = new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw")));
+            return await out.text();
+        }
+        p += 46 + nameLen + extraLen + commentLen;
+    }
+    return null;
+}
+
+async function readBackupFile(file) {
+    const buf = await file.arrayBuffer();
+    const head = new TextDecoder("latin1").decode(new Uint8Array(buf, 0, Math.min(8, buf.byteLength)));
+    if (head.startsWith("PK")) { const xml = await docxDocumentXml(buf); return xml ? backupFromMarker(xml) : null; }
+    const text = new TextDecoder("latin1").decode(new Uint8Array(buf));
+    if (head.startsWith("%PDF")) return backupFromMarker(text);
+    try { return JSON.parse(new TextDecoder().decode(new Uint8Array(buf))); } catch (e) { return null; }
+}
 
 const importBackupInput = document.getElementById("importBackupInput");
 document.getElementById("importBackupBtn").addEventListener("click", () => {
@@ -1394,31 +1476,27 @@ document.getElementById("importBackupBtn").addEventListener("click", () => {
     importBackupInput.value = "";
     importBackupInput.click();
 });
-importBackupInput.addEventListener("change", () => {
+importBackupInput.addEventListener("change", async () => {
     const file = importBackupInput.files && importBackupInput.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-        let b = null;
-        try { b = JSON.parse(reader.result); } catch (e) {}
-        const ok = (l) => l && Array.isArray(l.children);
-        if (!b || !ok(b.he) || !ok(b.en)) { alert("הקובץ הזה לא נראה כמו גיבוי של האפליקציה"); return; }
-        const fromBackup = { he: b.he, en: b.en };
-        const current = window.getLibrariesForCloud();
-        const before = countSongs(current.he) + countSongs(current.en);
-        // מיזוג בלי בסיס: מוסיף מה שחסר, ושום דבר שקיים כרגע לא נמחק או משתנה
-        const merged = window.mergeLibraries(current, fromBackup, null);
-        const added = countSongs(merged.he) + countSongs(merged.en) - before;
-        if (!confirm("גיבוי מ-" + (b.exportedAt ? fmtDate(b.exportedAt) : "?") + ".\n" +
-            (added > 0 ? added + " שירים יתווספו לספרייה." : "כל השירים שבגיבוי כבר נמצאים בספרייה.") +
-            "\nשירים שקיימים עכשיו לא יימחקו ולא ישתנו. להמשיך?")) return;
-        replaceInPlace(libs.he, merged.he);
-        replaceInPlace(libs.en, merged.en);
-        saveLibrary();
-            accountPanel.classList.add("hidden");
-        showToast("✅ השחזור הושלם");
-    };
-    reader.readAsText(file);
+    let b = null;
+    try { b = await readBackupFile(file); } catch (e) { b = null; }
+    const ok = (l) => l && Array.isArray(l.children);
+    if (!b || !ok(b.he) || !ok(b.en)) { alert("הקובץ הזה לא נראה כמו גיבוי של האפליקציה"); return; }
+    const fromBackup = { he: b.he, en: b.en };
+    const current = window.getLibrariesForCloud();
+    const before = countSongs(current.he) + countSongs(current.en);
+    // מיזוג בלי בסיס: מוסיף מה שחסר, ושום דבר שקיים כרגע לא נמחק או משתנה
+    const merged = window.mergeLibraries(current, fromBackup, null);
+    const added = countSongs(merged.he) + countSongs(merged.en) - before;
+    if (!confirm("גיבוי מ-" + (b.exportedAt ? fmtDate(b.exportedAt) : "?") + ".\n" +
+        (added > 0 ? added + " שירים יתווספו לספרייה." : "כל השירים שבגיבוי כבר נמצאים בספרייה.") +
+        "\nשירים שקיימים עכשיו לא יימחקו ולא ישתנו. להמשיך?")) return;
+    replaceInPlace(libs.he, merged.he);
+    replaceInPlace(libs.en, merged.en);
+    saveLibrary();
+    accountPanel.classList.add("hidden");
+    showToast("✅ השחזור הושלם");
 });
 
 // התקנה כאפליקציה מכרום ("הוסף למסך הבית") ועבודה בלי אינטרנט. לא בתוך אפליקציית ה-APK

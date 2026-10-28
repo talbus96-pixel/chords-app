@@ -33,10 +33,11 @@ Personal chord-sheet app (Hebrew + English songs), UI in Hebrew/RTL:
 - Personal library: tree of folders and songs, separate Hebrew and English libraries
   (English library flips the sidebar to the left/LTR).
 - Transposition, font size, Google login, cloud sync (Firestore), offline copies, PWA offline.
-- Design: 3 designs chosen in ⚙️ settings: `irish` (default), `scroll` (parchment + soft rollers
-  on the song card; owner LOVES it, don't change), `sea`. The owner does NOT want more designs.
-  List = `window.SHIRON_THEMES` in the inline `<head>` script of index.html (also sets
-  `<html data-theme>` before paint; unknown -> `irish`). irish and sea share one structure
+- Design: 3 designs chosen in ⚙️ settings (text buttons, no color swatches): `scroll` (DEFAULT;
+  parchment + soft rollers on the song card; owner LOVES it, don't change), `irish`, `sea`. The
+  owner does NOT want more designs. List = `window.SHIRON_THEMES` in the inline `<head>` script of
+  index.html (also sets `<html data-theme>` before paint). Saved in localStorage `shironTheme`
+  ONLY when the user clicks a design; nothing saved -> `scroll` (the old `appTheme` key is ignored). irish and sea share one structure
   (`html:where([data-theme]:not([data-theme="scroll"]))` rules, low specificity so night mode
   wins) and differ by one variables line each. They are NOT pastel any more (owner: "pleasant
   colors, the background may be a gradient"): colored gradient header (`--header-bg`, white
@@ -92,7 +93,7 @@ localStorage (per origin):
 - `offlineCopies` (max 5), `offlineActiveId` (set + not logged in => read-only mode).
 - `pendingSync_<uid>` — timestamp of a local change not yet acknowledged by the cloud.
 - `cloudBase_<uid>` — last library known to be in the cloud (base for 3-way merge).
-- `songFontSize`, `activeLibLang`, `scrollSpeed` (1-10), `colorChords` / `nightMode` ("1"/"0").
+- `songFontSize`, `activeLibLang`, `scrollSpeed` (1-10), `colorChords` / `nightMode` ("1"/"0"), `shironTheme`.
 
 Firestore: `users_libraries/<uid>` with `libraryData` (he), `libraryDataEn` (en),
 `lastUpdated`. `mergeLibraries` FIELDS include `transpose`. (A `setLists` field existed briefly in
@@ -121,6 +122,14 @@ Oct 2026; set lists were removed and the next write drops it.) Rules: read/write
   `results` = up to 5 `{title, source, url}` (chosen song first); the app shows them under
   "לא השיר הנכון?". `GET /song?url=...` fetches one chosen Tab4U / E-Chords page (other hosts
   rejected, same browser fallback + cache). `GET /health`.
+- `POST /export` (export.js, body limit 30mb): `{format: "pdf"|"docx", title, libraries: [{name,
+  items: [{type:"folder", name, children} | {type:"song", title, rtl, lines:[{text, chord}]}]}],
+  backup: {he, en, ...}}` -> the file. Each library/folder = heading (PDF bookmarks via puppeteer
+  `outline: true`; Word built-in "heading N" styles = collapsible), each song starts on a new page,
+  empty folders skipped. The `backup` JSON is embedded as `SHIRON-BACKUP-V1:<base64>:END-SHIRON-BACKUP`
+  (PDF: uncompressed stream /ShironBackup added with pdf-lib; Word: hidden text at the end of
+  word/document.xml). PDF fonts: bundled Liberation Sans/Mono (OFL, have Hebrew) in fonts/.
+  Locally `--single-process` crashes the playwright chromium; test buildPdf with your own launcher.
 - Hebrew -> Tab4U. Other -> Tab4U "quick" (plain HTTP, only if all words match), then E-Chords,
   then Tab4U. Tab4U: plain HTTP + cheerio (`resultsSimple?tab=songs&q=`, links
   `tabs/songs/...`, best word match, content from `#songContentTPL` table rows), Puppeteer
@@ -153,8 +162,11 @@ Other features: pick from up to 5 search results ("לא השיר הנכון?"); 
 (sidebar box, title or lyrics, both libraries); screen stays awake while a song is open (Wake
 Lock); auto-scroll speed 1-10; song editing from the song's ⋮ menu ("✏️ ערוך שיר"); in the
 settings panel (the ⚙️ button, top corner; ids still `accountMenu` / `accountPanel`): account
-(login/logout, sync status), design picker + night mode + colored chords, offline copies, backup
-to a JSON file and restore (restore only ADDS what is missing, via `mergeLibraries(current, backup, null)`).
+(login/logout, sync status), design picker + night mode + colored chords, offline copies,
+"גיבוי לקובץ" (asks PDF or Word, built by the server's POST /export; songs exported with their saved
+transpose) and "שחזור מגיבוי" (reads the embedded data from our PDF/Word, incl. a Word file re-saved
+elsewhere via a tiny zip reader + DecompressionStream, or an old JSON backup; restore only ADDS what
+is missing, via `mergeLibraries(current, backup, null)`).
 
 Removed at the owner's request: set lists. Not wanted: chord diagrams. Postponed: share a song.
 Fixed (Oct 2026): in Hebrew (RTL) songs a chord ending in "#" at the end of a chord line showed
