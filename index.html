@@ -116,6 +116,15 @@
                     <button id="saveChangesBtn" class="hidden">💾 שמור שינויים בשיר</button>
                 </div>
 
+                <div class="tools-row" id="scrollRow">
+                    <button class="js-scroll-toggle" title="גלילה אוטומטית">▶ גלילה</button>
+                    <div class="ctl-group">
+                        <button class="js-scroll-slower" title="לאט יותר">🐢</button>
+                        <span class="js-scroll-speed scroll-speed-label"></span>
+                        <button class="js-scroll-faster" title="מהר יותר">🐇</button>
+                    </div>
+                </div>
+
                 <div class="song-meta">
                     <div id="sourceInfo" class="hidden"></div>
                     <button id="editSongBtn" class="edit-song-btn hidden" title="עריכת השיר">✏️ עריכה</button>
@@ -131,14 +140,14 @@
         </main>
     </div>
 
-    <!-- כפתור גלילה צף: מופיע כששיר פתוח. בזמן גלילה נפתחים לידו כפתורי המהירות -->
+    <!-- כפתור גלילה צף: מופיע רק כששורת הגלילה שמעל השיר יצאה מהמסך. בזמן גלילה נפתחים לידו כפתורי המהירות -->
     <div id="scrollFloat" class="scroll-float hidden">
         <div class="scroll-speed">
-            <button id="scrollSlowerBtn" title="לאט יותר">🐢</button>
-            <span id="scrollSpeedLabel"></span>
-            <button id="scrollFasterBtn" title="מהר יותר">🐇</button>
+            <button class="js-scroll-slower" title="לאט יותר">🐢</button>
+            <span class="js-scroll-speed scroll-speed-label"></span>
+            <button class="js-scroll-faster" title="מהר יותר">🐇</button>
         </div>
-        <button id="autoScrollBtn" class="scroll-fab" title="גלילה אוטומטית">▶</button>
+        <button class="js-scroll-toggle scroll-fab" title="גלילה אוטומטית">▶</button>
     </div>
 
     <!-- תפריט קליק ימני / לחיצה ארוכה -->

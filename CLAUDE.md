@@ -93,7 +93,7 @@ localStorage (per origin):
 - `offlineCopies` (max 5), `offlineActiveId` (set + not logged in => read-only mode).
 - `pendingSync_<uid>` — timestamp of a local change not yet acknowledged by the cloud.
 - `cloudBase_<uid>` — last library known to be in the cloud (base for 3-way merge).
-- `songFontSize`, `activeLibLang`, `scrollSpeed` (1-10), `colorChords` / `nightMode` ("1"/"0"), `shironTheme`.
+- `songFontSize`, `activeLibLang`, `scrollLevel` (1-12; old `scrollSpeed` ignored), `colorChords` / `nightMode` ("1"/"0"), `shironTheme`.
 
 Firestore: `users_libraries/<uid>` with `libraryData` (he), `libraryDataEn` (en),
 `lastUpdated`. `mergeLibraries` FIELDS include `transpose`. (A `setLists` field existed briefly in
@@ -155,14 +155,17 @@ offline edits, first-run rescue, no cross-account copy, folder toggle = no write
 screen clean; put rarely used toggles in the ⚙️ settings panel or a ⋮ menu, not above the chords.
 
 Song screen: the ORIGINAL two buttons "העלה חצי טון (+)" / "הורד חצי טון (-)" + "A− 13 A+"
-(owner rejected a reset-to-original button and a compact "− 0 +" control), then a row with
-"מקור: ..." and a small "✏️ עריכה" button (only for library songs; opens the same editor as the
-song's ⋮ menu), then the song. Auto-scroll is a FLOATING round ▶ button (`#scrollFloat`, bottom-left,
-only while a song is open); while scrolling it shows ⏸ and a pill "🐢 n 🐇" next to it.
+(owner rejected a reset-to-original button and a compact "− 0 +" control), the scroll row
+"▶ גלילה 🐢 3 🐇" (`#scrollRow`), then a row with "מקור: ..." and a small "✏️ עריכה" button (only for
+library songs; opens the same editor as the song's ⋮ menu), then the song. When `#scrollRow` is
+off screen (auto or manual scrolling; IntersectionObserver) a FLOATING round ▶ button appears
+(`#scrollFloat`, left, 84px above the bottom); while scrolling it shows ⏸ and a pill "🐢 n 🐇".
+Both share the `.js-scroll-*` classes and stay in sync. Speeds: 12 levels `SCROLL_SPEEDS` (px/s),
+default 3 (= the old slowest; owner asked for 2 slower levels below it), saved as `scrollLevel`.
 Transposition is stored per song (`transpose`, original text kept; "שמור שינויים בשיר" saves it).
 Other features: pick from up to 5 search results ("לא השיר הנכון?"); search inside the library
 (sidebar box, title or lyrics, both libraries); screen stays awake while a song is open (Wake
-Lock); auto-scroll speed 1-10; song editing from the song's ⋮ menu ("✏️ ערוך שיר") or the
+Lock); auto-scroll speed 1-12; song editing from the song's ⋮ menu ("✏️ ערוך שיר") or the
 "✏️ עריכה" button above the song; in the
 settings panel (the ⚙️ button, top corner; ids still `accountMenu` / `accountPanel`): account
 (login/logout, sync status), design picker + night mode + colored chords, offline copies,

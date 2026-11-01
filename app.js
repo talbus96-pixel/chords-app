@@ -771,9 +771,9 @@ function displayCurrentSong() {
     updateSongTools();
 }
 
-// כפתור הגלילה הצף מופיע רק כששיר פתוח, וכפתור העריכה רק לשיר מהספרייה
+// כפתורי הגלילה (הצף מופיע רק כששיר פתוח), וכפתור העריכה רק לשיר מהספרייה
 function updateSongTools() {
-    document.getElementById("scrollFloat").classList.toggle("hidden", !currentSongData);
+    updateScrollButtons();
     const editable = !!(currentSongData && currentLibNodeId && currentSongData.id === currentLibNodeId && findLibNode(currentLibNodeId));
     document.getElementById("editSongBtn").classList.toggle("hidden", !editable);
 }
@@ -1249,11 +1249,15 @@ async function updateWakeLock() {
 document.addEventListener("visibilitychange", updateWakeLock);
 
 // ===== גלילה אוטומטית =====
-const autoScrollBtn = document.getElementById("autoScrollBtn");
-const scrollSpeedLabel = document.getElementById("scrollSpeedLabel");
-const SCROLL_MIN = 1, SCROLL_MAX = 10;
-let scrollSpeed = parseInt(localStorage.getItem("scrollSpeed"), 10) || 3;
+// שני מקומות לאותם כפתורים: שורת הגלילה שמעל השיר, וכפתור צף שמופיע כשהשורה יצאה מהמסך
+const scrollRow = document.getElementById("scrollRow");
+const scrollFloat = document.getElementById("scrollFloat");
+// פיקסלים לשנייה לכל דרגה. דרגה 3 (ברירת המחדל) = הדרגה האיטית ביותר שהייתה קודם
+const SCROLL_SPEEDS = [4, 7, 10, 16, 22, 28, 34, 40, 46, 52, 58, 64];
+const SCROLL_DEFAULT = 3;
+let scrollSpeed = parseInt(localStorage.getItem("scrollLevel"), 10) || SCROLL_DEFAULT;
 let scrollRaf = null, scrollLast = 0, scrollAcc = 0;
+let scrollRowVisible = true;
 
 function scrollerEl() { return document.querySelector(".main-content"); }
 
@@ -1261,11 +1265,23 @@ function scrollStep(now) {
     const sc = scrollerEl();
     const dt = Math.min(100, now - scrollLast);
     scrollLast = now;
-    scrollAcc += (4 + scrollSpeed * 6) * dt / 1000; // פיקסלים לשנייה: 10 עד 64
+    scrollAcc += SCROLL_SPEEDS[scrollSpeed - 1] * dt / 1000;
     const whole = Math.floor(scrollAcc);
     if (whole > 0) { sc.scrollTop += whole; scrollAcc -= whole; }
     if (sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 1) { stopAutoScroll(); return; }
     scrollRaf = requestAnimationFrame(scrollStep);
+}
+
+function updateScrollButtons() {
+    const running = !!scrollRaf;
+    document.querySelectorAll(".js-scroll-toggle").forEach(b => {
+        b.innerText = running ? (b.classList.contains("scroll-fab") ? "⏸" : "⏸ עצור") : (b.classList.contains("scroll-fab") ? "▶" : "▶ גלילה");
+        b.title = running ? "עצור גלילה" : "גלילה אוטומטית";
+        b.classList.toggle("on", running);
+    });
+    scrollFloat.classList.toggle("running", running);
+    // הכפתור הצף: רק כששיר פתוח ושורת הגלילה לא נראית
+    scrollFloat.classList.toggle("hidden", !currentSongData || scrollRowVisible);
 }
 
 function startAutoScroll() {
@@ -1274,29 +1290,33 @@ function startAutoScroll() {
     scrollLast = performance.now();
     scrollAcc = 0;
     scrollRaf = requestAnimationFrame(scrollStep);
-    autoScrollBtn.innerText = "⏸";
-    autoScrollBtn.title = "עצור גלילה";
-    document.getElementById("scrollFloat").classList.add("running");
+    updateScrollButtons();
 }
 
 function stopAutoScroll() {
     if (scrollRaf) cancelAnimationFrame(scrollRaf);
     scrollRaf = null;
-    autoScrollBtn.innerText = "▶";
-    autoScrollBtn.title = "גלילה אוטומטית";
-    document.getElementById("scrollFloat").classList.remove("running");
+    updateScrollButtons();
 }
 
 function changeScrollSpeed(d) {
-    scrollSpeed = Math.min(SCROLL_MAX, Math.max(SCROLL_MIN, scrollSpeed + d));
-    scrollSpeedLabel.innerText = scrollSpeed;
-    try { localStorage.setItem("scrollSpeed", scrollSpeed); } catch (e) {}
+    scrollSpeed = Math.min(SCROLL_SPEEDS.length, Math.max(1, scrollSpeed + d));
+    document.querySelectorAll(".js-scroll-speed").forEach(l => { l.innerText = scrollSpeed; });
+    try { localStorage.setItem("scrollLevel", scrollSpeed); } catch (e) {}
 }
 
-autoScrollBtn.addEventListener("click", () => scrollRaf ? stopAutoScroll() : startAutoScroll());
-document.getElementById("scrollSlowerBtn").addEventListener("click", () => changeScrollSpeed(-1));
-document.getElementById("scrollFasterBtn").addEventListener("click", () => changeScrollSpeed(1));
+document.querySelectorAll(".js-scroll-toggle").forEach(b => b.addEventListener("click", () => scrollRaf ? stopAutoScroll() : startAutoScroll()));
+document.querySelectorAll(".js-scroll-slower").forEach(b => b.addEventListener("click", () => changeScrollSpeed(-1)));
+document.querySelectorAll(".js-scroll-faster").forEach(b => b.addEventListener("click", () => changeScrollSpeed(1)));
 changeScrollSpeed(0);
+
+// האם שורת הגלילה שמעל השיר נראית על המסך (בגלילה אוטומטית או ידנית)
+if ("IntersectionObserver" in window) {
+    new IntersectionObserver((entries) => {
+        scrollRowVisible = entries[entries.length - 1].isIntersecting;
+        updateScrollButtons();
+    }).observe(scrollRow);
+}
 
 // ===== אקורדים צבעוניים ומצב לילה (נשמרים במכשיר) =====
 const colorChordsBtn = document.getElementById("colorChordsBtn");
