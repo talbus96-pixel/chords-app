@@ -604,7 +604,7 @@ function deleteItem(id) {
                 stopAutoScroll();
                 updateWakeLock();
                 updateSongTools();
-                songDisplay.innerText = "חפש שיר כדי לשאוב אותו, או בחר שיר מעץ התיקיות...";
+                songDisplay.innerText = "חפש שיר, או בחר שיר מהספרייה";
                 sourceInfo.classList.add("hidden");
             }
         }
@@ -613,7 +613,7 @@ function deleteItem(id) {
 
 addFolderBtnRoot.addEventListener("click", () => createFolder("root"));
 
-// חיפוש ושאיבה
+// חיפוש שיר
 const SCRAPER_URL = "https://chords-scraper.onrender.com";
 
 // השרת החינמי נרדם אחרי כרבע שעה בלי שימוש. מעירים אותו כבר כשהאפליקציה נפתחת / כשנוגעים בתיבת החיפוש
@@ -646,7 +646,7 @@ async function performSearch() {
         searchResultsList = Array.isArray(data.results) ? data.results : [];
         renderSearchResults(data.url);
     } catch (err) {
-        songDisplay.innerText = `❌ לא הצלחתי לשאוב: ${err.message}\n\nנסה שוב בעוד רגע, או נסה לנסח את החיפוש אחרת (למשל: שם שיר + שם אמן).`;
+        songDisplay.innerText = `❌ לא הצלחתי למצוא את השיר: ${err.message}\n\nנסה שוב בעוד רגע, או נסה לנסח את החיפוש אחרת (למשל: שם שיר + שם אמן).`;
     }
 }
 
@@ -760,7 +760,7 @@ function songHtml(content, steps) {
 
 function displayCurrentSong() {
     if (!currentSongData) return;
-    sourceInfo.innerText = `מקור: נשאב מ-${currentSongData.source}`;
+    sourceInfo.innerText = `מקור: ${currentSongData.source}`;
     sourceInfo.classList.toggle("hidden", !currentSongData.source);
     songDisplay.innerHTML = songHtml(currentSongData.content || "", currentSongData.transpose || 0);
     // שירים בעברית מיושרים לימין, שירים באנגלית לשמאל (אחרת האקורדים לא מתיישרים מעל המילים)
