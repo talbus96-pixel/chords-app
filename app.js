@@ -603,6 +603,7 @@ function deleteItem(id) {
                 updateSaveChangesBtn();
                 stopAutoScroll();
                 updateWakeLock();
+                updateSongTools();
                 songDisplay.innerText = "חפש שיר כדי לשאוב אותו, או בחר שיר מעץ התיקיות...";
                 sourceInfo.classList.add("hidden");
             }
@@ -658,6 +659,7 @@ function clearSongView() {
     stopAutoScroll();
     updateSaveChangesBtn();
     updateWakeLock();
+    updateSongTools();
 }
 
 function showSearchedSong(data, fallbackTitle) {
@@ -766,6 +768,14 @@ function displayCurrentSong() {
     songDisplay.style.direction = isHebrew ? "rtl" : "ltr";
     songDisplay.style.textAlign = isHebrew ? "right" : "left";
     updateWakeLock();
+    updateSongTools();
+}
+
+// כפתור הגלילה הצף מופיע רק כששיר פתוח, וכפתור העריכה רק לשיר מהספרייה
+function updateSongTools() {
+    document.getElementById("scrollFloat").classList.toggle("hidden", !currentSongData);
+    const editable = !!(currentSongData && currentLibNodeId && currentSongData.id === currentLibNodeId && findLibNode(currentLibNodeId));
+    document.getElementById("editSongBtn").classList.toggle("hidden", !editable);
 }
 
 // פתיחת שיר מהספרייה (מהעץ, מהחיפוש בספרייה או מרשימת הופעה)
@@ -1264,15 +1274,17 @@ function startAutoScroll() {
     scrollLast = performance.now();
     scrollAcc = 0;
     scrollRaf = requestAnimationFrame(scrollStep);
-    autoScrollBtn.innerText = "⏸ עצור";
-    autoScrollBtn.classList.add("on");
+    autoScrollBtn.innerText = "⏸";
+    autoScrollBtn.title = "עצור גלילה";
+    document.getElementById("scrollFloat").classList.add("running");
 }
 
 function stopAutoScroll() {
     if (scrollRaf) cancelAnimationFrame(scrollRaf);
     scrollRaf = null;
-    autoScrollBtn.innerText = "▶ גלילה";
-    autoScrollBtn.classList.remove("on");
+    autoScrollBtn.innerText = "▶";
+    autoScrollBtn.title = "גלילה אוטומטית";
+    document.getElementById("scrollFloat").classList.remove("running");
 }
 
 function changeScrollSpeed(d) {
@@ -1348,6 +1360,7 @@ function editSong(id) {
     editContentInput.value = node.content || "";
     editModal.classList.remove("hidden");
 }
+document.getElementById("editSongBtn").addEventListener("click", () => { if (currentLibNodeId) editSong(currentLibNodeId); });
 document.getElementById("editCancelBtn").addEventListener("click", () => editModal.classList.add("hidden"));
 document.getElementById("editSaveBtn").addEventListener("click", () => {
     const node = editingId && findLibNode(editingId);

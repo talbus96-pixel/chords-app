@@ -355,3 +355,16 @@ body.night .menu-btn { background: var(--surface-2); color: var(--green-dark); b
 .account-panel { width: 290px; }
 @media (max-width: 768px) { .account-toggle .toggle-text { display: none; } }
 html body.night { background-image: none; }
+
+/* ==================================================== */
+/* שורת "מקור" + כפתור עריכה מעל השיר, וכפתור גלילה צף */
+.song-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; min-height: 28px; }
+.song-meta #sourceInfo { margin-bottom: 0; }
+.edit-song-btn { margin-inline-start: auto; padding: 5px 12px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface-2); color: var(--green-dark); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.scroll-float { position: fixed; left: 16px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 80; display: flex; align-items: center; gap: 8px; direction: ltr; }
+.scroll-fab { width: 54px; height: 54px; border-radius: 50%; border: none; background: var(--green); color: #fff; font-size: 20px; cursor: pointer; box-shadow: 0 4px 14px rgba(40, 35, 20, 0.28); opacity: 0.92; }
+.scroll-speed { display: none; align-items: center; gap: 4px; padding: 4px 6px; border-radius: 24px; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 3px 10px rgba(40, 35, 20, 0.18); }
+.scroll-float.running .scroll-speed { display: flex; }
+.scroll-speed button { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--surface-2); cursor: pointer; font-size: 16px; }
+#scrollSpeedLabel { min-width: 18px; text-align: center; font-weight: bold; color: var(--muted); font-size: 14px; }
+.main-content { padding-bottom: 90px; }

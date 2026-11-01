@@ -41,7 +41,7 @@ Personal chord-sheet app (Hebrew + English songs), UI in Hebrew/RTL:
   (`html:where([data-theme]:not([data-theme="scroll"]))` rules, low specificity so night mode
   wins) and differ by one variables line each. They are NOT pastel any more (owner: "pleasant
   colors, the background may be a gradient"): colored gradient header (`--header-bg`, white
-  title), gradient page background (`--page-bg`: irish sage->cream, sea sky->sand). Button swatches: `THEME_SWATCH` in app.js.
+  title), gradient page background (`--page-bg`: irish sage->cream, sea sky->sand). 
   Base variables = the "מזכרת אירית" block; night mode (`body.night`) comes after the themes.
   The owner wants it pleasant and gentle ("not a blackjack table").
 - Font: the ORIGINAL system font everywhere ("Segoe UI", Tahoma, ... sans-serif), titles too.
@@ -155,12 +155,15 @@ offline edits, first-run rescue, no cross-account copy, folder toggle = no write
 screen clean; put rarely used toggles in the ⚙️ settings panel or a ⋮ menu, not above the chords.
 
 Song screen: the ORIGINAL two buttons "העלה חצי טון (+)" / "הורד חצי טון (-)" + "A− 13 A+"
-(owner rejected a reset-to-original button and a compact "− 0 +" control), one row
-"▶ גלילה 🐢 3 🐇", then the song.
+(owner rejected a reset-to-original button and a compact "− 0 +" control), then a row with
+"מקור: ..." and a small "✏️ עריכה" button (only for library songs; opens the same editor as the
+song's ⋮ menu), then the song. Auto-scroll is a FLOATING round ▶ button (`#scrollFloat`, bottom-left,
+only while a song is open); while scrolling it shows ⏸ and a pill "🐢 n 🐇" next to it.
 Transposition is stored per song (`transpose`, original text kept; "שמור שינויים בשיר" saves it).
 Other features: pick from up to 5 search results ("לא השיר הנכון?"); search inside the library
 (sidebar box, title or lyrics, both libraries); screen stays awake while a song is open (Wake
-Lock); auto-scroll speed 1-10; song editing from the song's ⋮ menu ("✏️ ערוך שיר"); in the
+Lock); auto-scroll speed 1-10; song editing from the song's ⋮ menu ("✏️ ערוך שיר") or the
+"✏️ עריכה" button above the song; in the
 settings panel (the ⚙️ button, top corner; ids still `accountMenu` / `accountPanel`): account
 (login/logout, sync status), design picker + night mode + colored chords, offline copies,
 "גיבוי לקובץ" (asks PDF or Word, built by the server's POST /export; songs exported with their saved
