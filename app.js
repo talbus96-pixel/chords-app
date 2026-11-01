@@ -761,7 +761,7 @@ function songHtml(content, steps) {
 function displayCurrentSong() {
     if (!currentSongData) return;
     sourceInfo.innerText = `מקור: ${currentSongData.source}`;
-    sourceInfo.classList.toggle("hidden", !currentSongData.source);
+    updateSourceInfo();
     songDisplay.innerHTML = songHtml(currentSongData.content || "", currentSongData.transpose || 0);
     // שירים בעברית מיושרים לימין, שירים באנגלית לשמאל (אחרת האקורדים לא מתיישרים מעל המילים)
     const isHebrew = /[\u0590-\u05FF]/.test(currentSongData.content);
@@ -776,6 +776,14 @@ function updateSongTools() {
     updateScrollButtons();
     const editable = !!(currentSongData && currentLibNodeId && currentSongData.id === currentLibNodeId && findLibNode(currentLibNodeId));
     document.getElementById("editSongBtn").classList.toggle("hidden", !editable);
+}
+
+// שורת "מקור" מוצגת רק לבעלי האפליקציה (כשהם מחוברים עם אחד החשבונות האלה)
+const SOURCE_VIEWERS = ["talbus96@gmail.com", "tal123t123@gmail.com"];
+function updateSourceInfo() {
+    const acc = window.getAccount && window.getAccount();
+    const owner = !!(acc && SOURCE_VIEWERS.includes((acc.email || "").toLowerCase()));
+    sourceInfo.classList.toggle("hidden", !(owner && currentSongData && currentSongData.source));
 }
 
 // פתיחת שיר מהספרייה (מהעץ, מהחיפוש בספרייה או מרשימת הופעה)
@@ -1052,7 +1060,7 @@ function updateOfflineBanner() {
     const icon = document.getElementById("accountOfflineIcon");
     if (icon) icon.classList.toggle("hidden", b.classList.contains("hidden"));
 }
-window.onAccountChange = updateOfflineBanner;
+window.onAccountChange = () => { updateOfflineBanner(); updateSourceInfo(); };
 window.activeOfflineCopyEmail = function () { const c = activeCopy(); return c ? c.email : null; };
 
 function activateCopyData(copy) {

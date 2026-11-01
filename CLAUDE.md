@@ -156,7 +156,8 @@ screen clean; put rarely used toggles in the ⚙️ settings panel or a ⋮ menu
 
 Song screen: the ORIGINAL two buttons "העלה חצי טון (+)" / "הורד חצי טון (-)" + "A− 13 A+"
 (owner rejected a reset-to-original button and a compact "− 0 +" control), the scroll row
-"▶ גלילה 🐢 3 🐇" (`#scrollRow`), then a row with "מקור: ..." and a small "✏️ עריכה" button (only for
+"▶ גלילה 🐢 3 🐇" (`#scrollRow`), then a row with "מקור: X" (shown ONLY when logged in with an owner account: `SOURCE_VIEWERS` in
+app.js = talbus96@gmail.com, tal123t123@gmail.com; other users never see the source) and a small "✏️ עריכה" button (only for
 library songs; opens the same editor as the song's ⋮ menu), then the song. When `#scrollRow` is
 off screen (auto or manual scrolling; IntersectionObserver) a FLOATING round ▶ button appears
 (`#scrollFloat`, left, 84px above the bottom); while scrolling it shows ⏸ and a pill "🐢 n 🐇".
@@ -174,6 +175,7 @@ transpose) and "שחזור מגיבוי" (reads the embedded data from our PDF/W
 elsewhere via a tiny zip reader + DecompressionStream, or an old JSON backup; restore only ADDS what
 is missing, via `mergeLibraries(current, backup, null)`).
 
+Never use the word "לשאוב"/"שאיבה"/"נשאב" in the UI (owner asked).
 Removed at the owner's request: set lists. Not wanted: chord diagrams. Postponed: share a song.
 Fixed (Oct 2026): in Hebrew (RTL) songs a chord ending in "#" at the end of a chord line showed
 as "#F". `songHtml` now puts an invisible LRM (U+200E) right after the last chord of each chord
