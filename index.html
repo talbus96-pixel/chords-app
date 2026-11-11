@@ -46,6 +46,10 @@
                 </div>
             </div>
             <div class="settings-section">
+                <div class="settings-title">כיוון הגיטרה</div>
+                <div class="theme-picker tuning-picker" id="tuningPicker"></div>
+            </div>
+            <div class="settings-section">
                 <div class="settings-title">שמירה וגיבוי</div>
                 <div class="offline-row">
                     <button id="downloadOfflineBtn" class="hidden" disabled>📥 הורד לשימוש אופליין</button>
@@ -127,6 +131,7 @@
 
                 <div class="song-meta">
                     <div id="sourceInfo" class="hidden"></div>
+                    <button id="transposeInfoBtn" class="transpose-chip hidden" title="מול המקור והקאפו"></button>
                     <button id="editSongBtn" class="edit-song-btn hidden" title="עריכת השיר">✏️ עריכה</button>
                 </div>
                 <div id="searchResults" class="search-results hidden"></div>
@@ -206,6 +211,17 @@
                 <button id="exportDocxBtn" class="primary">📝 Word</button>
             </div>
             <div class="modal-btns"><button id="exportCancelBtn">ביטול</button></div>
+        </div>
+    </div>
+
+    <!-- מודאל המצב מול המקור + הקאפו -->
+    <div id="capoModal" class="modal-overlay hidden">
+        <div class="color-palette-card capo-card">
+            <h3>מול המקור</h3>
+            <div class="capo-rows" id="capoRows"></div>
+            <div class="capo-badge" id="capoBadge"></div>
+            <div class="edit-hint" id="capoNote"></div>
+            <button id="capoCloseBtn">סגור</button>
         </div>
     </div>
 

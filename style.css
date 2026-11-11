@@ -74,6 +74,7 @@ h1.desktop-only { text-align: center; margin-bottom: 20px; }
 .color-palette-card { background: white; padding: 22px; border-radius: 12px; width: 300px; text-align: center; }
 .palette-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; justify-items: center; margin-bottom: 18px; margin-top: 15px; }
 .color-circle { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; }
+#capoCloseBtn { padding: 8px; width: 100%; border-radius: 6px; border: none; background: #e2e8f0; font-weight: bold; cursor: pointer; }
 #closePaletteBtn { padding: 8px; width: 100%; border-radius: 6px; border: none; background: #e2e8f0; font-weight: bold; }
 
 /* ==================================================== */
@@ -159,7 +160,7 @@ h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); fon
 .offline-row button { background: var(--surface); border-color: var(--border); color: var(--text); }
 .color-palette-card { background: var(--surface); border: 2px solid var(--green); }
 .color-palette-card h3 { color: var(--green); font-family: var(--title-font); font-weight: 700; font-size: 18px; }
-#closePaletteBtn, #closeMoveBtn, #closeOfflineBtn, .offline-btns button { background: var(--gold-soft); color: var(--green-dark); border: none; border-radius: 6px; padding: 8px; font-weight: bold; cursor: pointer; }
+#closePaletteBtn, #closeMoveBtn, #closeOfflineBtn, #capoCloseBtn, .offline-btns button { background: var(--gold-soft); color: var(--green-dark); border: none; border-radius: 6px; padding: 8px; font-weight: bold; cursor: pointer; }
 .move-folder-btn, .offline-row-item { background: var(--surface-2); color: var(--text); }
 .context-divider { background: var(--border); }
 .toast { background: var(--green-dark); border: 1px solid var(--gold); }
@@ -350,6 +351,7 @@ body.night .menu-btn { background: var(--surface-2); color: var(--green-dark); b
 .theme-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .theme-picker button { padding: 9px 2px; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; font-size: 12px; font-weight: bold; color: #444; }
 .theme-picker button.on { border-color: var(--green-dark); }
+.tuning-picker { grid-template-columns: repeat(2, 1fr); }
 .export-btns { margin: 14px 0 8px; }
 .export-btns button { padding: 14px 9px; font-size: 15px; }
 .account-panel { width: 290px; }
@@ -360,6 +362,13 @@ html body.night { background-image: none; }
 /* שורת "מקור" + כפתור עריכה מעל השיר, וכפתור גלילה צף */
 .song-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; min-height: 28px; }
 .song-meta #sourceInfo { margin-bottom: 0; }
+/* הצ'יפ הקטן "מול המקור" (ליד כפתור העריכה) וחלונית הקאפו */
+.transpose-chip { direction: ltr; display: inline-flex; align-items: center; gap: 3px; padding: 5px 11px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface-2); color: var(--green-dark); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.transpose-chip .chip-flat { color: var(--muted); font-weight: 400; }
+.capo-card .capo-rows { display: grid; gap: 6px; text-align: right; font-size: 13px; color: var(--text); margin: 14px 0 12px; }
+.capo-card .capo-badge { font-size: 19px; font-weight: bold; color: var(--green-dark); background: var(--green-soft); border-radius: 10px; padding: 12px 8px; }
+.capo-card .edit-hint { margin-top: 8px; }
+.capo-card #capoCloseBtn { margin-top: 14px; width: 100%; }
 .edit-song-btn { margin-inline-start: auto; padding: 5px 12px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface-2); color: var(--green-dark); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
 .scroll-float { position: fixed; left: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 80; display: flex; align-items: center; gap: 8px; direction: ltr; }
 .scroll-fab { width: 54px; height: 54px; border-radius: 50%; border: none; background: var(--green); color: #fff; font-size: 20px; cursor: pointer; box-shadow: 0 4px 14px rgba(40, 35, 20, 0.28); opacity: 0.92; }

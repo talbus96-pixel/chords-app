@@ -776,6 +776,8 @@ function updateSongTools() {
     updateScrollButtons();
     const editable = !!(currentSongData && currentLibNodeId && currentSongData.id === currentLibNodeId && findLibNode(currentLibNodeId));
     document.getElementById("editSongBtn").classList.toggle("hidden", !editable);
+    updateTransposeChip();
+    if (!capoModal.classList.contains("hidden")) renderCapoModal();
 }
 
 // שורת "מקור" מוצגת רק לבעלי האפליקציה (כשהם מחוברים עם אחד החשבונות האלה)
@@ -873,6 +875,85 @@ function changeTranspose(delta) {
 
 document.getElementById("transposeUp").addEventListener("click", () => changeTranspose(1));
 document.getElementById("transposeDown").addEventListener("click", () => changeTranspose(-1));
+
+// ===== כיוון הגיטרה, המצב מול המקור וחישוב הקאפו =====
+// הכיוון נשמר במכשיר בלבד (לא בענן). הערך = בכמה חצאי טונים הגיטרה מכוונת מתחת לסטנדרטי
+const TUNINGS = [["standard", "סטנדרטי (E)", 0], ["halfdown", "חצי טון נמוך (Eb)", -1]];
+const DEFAULT_TUNING = "standard";
+let guitarTuning = DEFAULT_TUNING;
+try { const tn = localStorage.getItem("guitarTuning"); if (TUNINGS.some(x => x[0] === tn)) guitarTuning = tn; } catch (e) {}
+
+function tuningEntry() { return TUNINGS.find(x => x[0] === guitarTuning) || TUNINGS[0]; }
+function tuningOffset() { return tuningEntry()[2]; }
+function tuningName() { return tuningEntry()[1]; }
+function songTranspose() { return (currentSongData && currentSongData.transpose) || 0; }
+
+// חצאי טונים -> טונים, בכתיב שהבעלים ביקש: 0.5 / 1 / 2.5
+function tonesNum(semis) { return (Math.abs(semis) / 2).toFixed(1).replace(/\.0$/, ""); }
+function tonesText(semis) { return tonesNum(semis) + (Math.abs(semis) <= 2 ? " טון" : " טונים"); }
+
+// קאפו רק מעלה את הצליל, כיוון נמוך מוריד אותו:
+// (אקורד מוצג = מקור + transpose) + קאפו + כיוון = מקור  =>  קאפו = -transpose - כיוון
+function capoFret() { return -songTranspose() - tuningOffset(); }
+
+// האקורד הראשון בשיר (כדי להראות מקור -> מוצג)
+function firstChord(content) {
+    for (const line of (content || "").split("\n")) {
+        if (!isChordLine(line)) continue;
+        const tok = line.trim().split(/\s+/).find(x => CHORD_RE.test(x));
+        if (tok) return tok;
+    }
+    return null;
+}
+
+// הצ'יפ הקטן ליד "עריכה": מופיע רק כשיש שינוי טון או כיוון לא סטנדרטי
+const transposeInfoBtn = document.getElementById("transposeInfoBtn");
+function updateTransposeChip() {
+    const t = songTranspose();
+    const show = !!currentSongData && (t !== 0 || tuningOffset() !== 0);
+    transposeInfoBtn.classList.toggle("hidden", !show);
+    if (!show) return;
+    const sign = t > 0 ? "+" : (t < 0 ? "-" : "");
+    transposeInfoBtn.innerHTML = "<span>\uD83C\uDFB5 " + sign + tonesNum(t) + "</span>" +
+        (tuningOffset() !== 0 ? '<span class="chip-flat">\u266D</span>' : "");
+}
+
+const capoModal = document.getElementById("capoModal");
+function renderCapoModal() {
+    if (!currentSongData) return;
+    const t = songTranspose();
+    const fret = capoFret();
+    const rows = [];
+    rows.push("<div>האקורדים שמוצגים: <b>" +
+        (t === 0 ? "המקור עצמו" : tonesText(t) + (t > 0 ? " מעל המקור" : " מתחת למקור")) + "</b></div>");
+    const first = firstChord(currentSongData.content);
+    if (first) {
+        rows.push('<div>האקורד הראשון: <b dir="ltr">' + escapeHtml(first) +
+            (t ? " \u2192 " + escapeHtml(transposeChord(first, t)) : "") + "</b></div>");
+    }
+    if (tuningOffset() !== 0) rows.push("<div>כיוון הגיטרה: <b>" + tuningName() + "</b></div>");
+    document.getElementById("capoRows").innerHTML = rows.join("");
+
+    const badge = document.getElementById("capoBadge");
+    const note = document.getElementById("capoNote");
+    if (fret > 0) { badge.innerText = "\uD83C\uDFB8 קאפו " + fret; note.innerText = ""; }
+    else if (fret === 0) { badge.innerText = "\uD83C\uDFB8 בלי קאפו"; note.innerText = ""; }
+    else {
+        // קאפו לא מוריד: כשהצליל גבוה מהמקור אין סריג שמחזיר אליו
+        badge.innerText = "\uD83C\uDFB8 אין קאפו";
+        note.innerText = "קאפו רק מעלה. הורד " + tonesText(t + 1 + tuningOffset()) + " כדי לקבל קאפו 1.";
+    }
+}
+function openCapoModal() {
+    if (!currentSongData) return;
+    renderCapoModal();
+    capoModal.classList.remove("hidden");
+}
+function closeCapoModal() { capoModal.classList.add("hidden"); }
+
+transposeInfoBtn.addEventListener("click", openCapoModal);
+document.getElementById("capoCloseBtn").addEventListener("click", closeCapoModal);
+capoModal.addEventListener("click", e => { if (e.target === capoModal) closeCapoModal(); });
 
 // גודל גופן של השיר – נשמר במכשיר כדי שיישאר גם אחרי סגירת האפליקציה
 const FONT_MIN = 10, FONT_MAX = 32;
@@ -1370,6 +1451,25 @@ document.querySelectorAll("[data-theme-pick]").forEach(b => b.addEventListener("
 colorChordsBtn.addEventListener("click", () => { colorChords = !colorChords; writeFlag("colorChords", colorChords); applyViewFlags(); });
 nightModeBtn.addEventListener("click", () => { nightMode = !nightMode; writeFlag("nightMode", nightMode); applyViewFlags(); });
 applyTheme(currentTheme());
+
+// ===== בחירת כיוון הגיטרה (ההגדרות) – משנה רק את החישוב מול המקור, לא את האקורדים המוצגים =====
+const tuningPicker = document.getElementById("tuningPicker");
+TUNINGS.forEach(([key, name]) => {
+    const b = document.createElement("button");
+    b.dataset.tuningPick = key;
+    b.innerText = name;
+    tuningPicker.appendChild(b);
+});
+function applyTuning(key, save) {
+    if (!TUNINGS.some(x => x[0] === key)) key = DEFAULT_TUNING;
+    guitarTuning = key;
+    if (save) { try { localStorage.setItem("guitarTuning", key); } catch (e) {} }
+    document.querySelectorAll("[data-tuning-pick]").forEach(b => b.classList.toggle("on", b.dataset.tuningPick === key));
+    updateTransposeChip();
+    if (!capoModal.classList.contains("hidden")) renderCapoModal();
+}
+document.querySelectorAll("[data-tuning-pick]").forEach(b => b.addEventListener("click", () => applyTuning(b.dataset.tuningPick, true)));
+applyTuning(guitarTuning);
 
 // ===== עריכה ידנית של שיר =====
 const editModal = document.getElementById("editModal");

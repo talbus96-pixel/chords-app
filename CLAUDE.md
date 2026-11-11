@@ -93,7 +93,8 @@ localStorage (per origin):
 - `offlineCopies` (max 5), `offlineActiveId` (set + not logged in => read-only mode).
 - `pendingSync_<uid>` — timestamp of a local change not yet acknowledged by the cloud.
 - `cloudBase_<uid>` — last library known to be in the cloud (base for 3-way merge).
-- `songFontSize`, `activeLibLang`, `scrollLevel` (1-12; old `scrollSpeed` ignored), `colorChords` / `nightMode` ("1"/"0"), `shironTheme`.
+- `songFontSize`, `activeLibLang`, `scrollLevel` (1-12; old `scrollSpeed` ignored), `colorChords` / `nightMode` ("1"/"0"), `shironTheme`,
+  `guitarTuning` ("standard" / "halfdown" = the guitar tuned a semitone down; device only, never synced).
 
 Firestore: `users_libraries/<uid>` with `libraryData` (he), `libraryDataEn` (en),
 `lastUpdated`. `mergeLibraries` FIELDS include `transpose`. (A `setLists` field existed briefly in
@@ -158,7 +159,15 @@ Song screen: the ORIGINAL two buttons "העלה חצי טון (+)" / "הורד �
 (owner rejected a reset-to-original button and a compact "− 0 +" control), the scroll row
 "▶ גלילה 🐢 3 🐇" (`#scrollRow`), then a row with "מקור: X" (shown ONLY when logged in with an owner account: `SOURCE_VIEWERS` in
 app.js = talbus96@gmail.com, tal123t123@gmail.com; other users never see the source) and a small "✏️ עריכה" button (only for
-library songs; opens the same editor as the song's ⋮ menu), then the song. When `#scrollRow` is
+library songs; opens the same editor as the song's ⋮ menu) and the small chip `#transposeInfoBtn`
+("🎵 -2.5", plus "♭" when the tuning is not standard; shown only when `transpose` != 0 or the
+tuning is lowered), then the song. Tapping the chip opens `#capoModal` ("מול המקור"): how far the shown
+chords are from the original, first chord original -> shown, the tuning when it is not standard, and the
+capo badge. Capo math: the displayed chord sounds `transpose + capo + tuningOffset` from the original, so
+**capo = -transpose - tuningOffset** (`TUNINGS`: standard 0, "חצי טון נמוך (Eb)" -1). A capo only raises:
+capo 0 => "בלי קאפו", negative (the shown chords are above the original) => "אין קאפו" plus how many tones
+to go down for capo 1. The original is always assumed to be recorded without a capo. The tuning is picked
+in ⚙️ ("כיוון הגיטרה", `#tuningPicker`), is per device and does NOT change the displayed chords. When `#scrollRow` is
 off screen (auto or manual scrolling; IntersectionObserver) a FLOATING round ▶ button appears
 (`#scrollFloat`, left, 84px above the bottom); while scrolling it shows ⏸ and a pill "🐢 n 🐇".
 Both share the `.js-scroll-*` classes and stay in sync. Speeds: 12 levels `SCROLL_SPEEDS` (px/s),
