@@ -369,12 +369,12 @@ function createTreeElement(node) {
     leftControls.appendChild(titleDiv);
     itemDiv.appendChild(leftControls);
 
-    // צד שמאל: כפתורים גלויים (פלטת צבעים לתיקייה ומחיקה)
-    if (node.id !== "root") {
+    // צד שמאל: כפתורים גלויים (פלטת צבעים לתיקייה ומחיקה). לתיקייה הראשית רק ⋮ (תיקייה חדשה / סידור א-ב)
+    {
         const actionsBar = document.createElement("div");
         actionsBar.className = "item-actions-bar";
 
-        if (node.type === "folder") {
+        if (node.type === "folder" && node.id !== "root") {
             const colorBtn = document.createElement("button");
             colorBtn.className = "action-icon-btn";
             colorBtn.innerText = "🎨";
@@ -394,7 +394,7 @@ function createTreeElement(node) {
             e.stopPropagation();
             deleteItem(node.id);
         };
-        actionsBar.appendChild(delBtn);
+        if (node.id !== "root") actionsBar.appendChild(delBtn);
 
         const dotsBtn = document.createElement("button");
         dotsBtn.className = "action-icon-btn menu-dots-btn";
@@ -465,12 +465,14 @@ function openContextMenu(x, y, node) {
     if (node.id === "root") {
         contextMenuList.innerHTML = `
             <li onclick="createFolder('root')">➕ תיקייה חדשה</li>
+            <li onclick="sortFolder('root')">🔤 סדר לפי א-ב</li>
         `;
     } else if (node.type === "folder") {
         contextMenuList.innerHTML = `
             <li onclick="createFolder('${node.id}')">➕ תת-תיקייה חדשה</li>
             <li onclick="renameItem('${node.id}')">✏️ שנה שם</li>
             <li onclick="openColorModal('${node.id}')">🎨 בחר צבע</li>
+            <li onclick="sortFolder('${node.id}')">🔤 סדר לפי א-ב</li>
             <li onclick="openMoveModal('${node.id}')">📂 העבר לתיקייה...</li>
             <li onclick="moveItem('${node.id}', 'root')">📤 העבר לתיקייה הראשית</li>
             <li onclick="moveToOtherLibrary('${node.id}')">🔁 ${otherLibLabel}</li>
@@ -481,6 +483,7 @@ function openContextMenu(x, y, node) {
         contextMenuList.innerHTML = `
             <li onclick="renameItem('${node.id}')">✏️ שנה שם שיר</li>
             <li onclick="duplicateSong('${node.id}')">📋 שכפל שיר</li>
+            <li onclick="shareSong('${node.id}')">💬 שתף שיר</li>
             <li onclick="editSong('${node.id}')">✏️ ערוך שיר</li>
             <li onclick="openMoveModal('${node.id}')">📂 העבר לתיקייה...</li>
             <li onclick="moveItem('${node.id}', 'root')">📤 העבר לתיקייה הראשית</li>
@@ -561,6 +564,36 @@ function duplicateSong(songId) {
     }
 }
 
+// סידור לפי א-ב של מה שבתוך התיקייה (רק הרמה הזאת): קודם תיקיות, אחר כך שירים
+function sortFolder(folderId) {
+    const info = findParentAndNode(myLibrary, folderId);
+    if (!info || info.node.type !== "folder") return;
+    const label = c => ((c.type === "folder" ? c.name : c.title) || "").trim();
+    info.node.children.sort((a, b) =>
+        (a.type === "folder" ? 0 : 1) - (b.type === "folder" ? 0 : 1) ||
+        label(a).localeCompare(label(b), ["he", "en"], { numeric: true, sensitivity: "base" }));
+    saveLibrary();
+    showToast("🔤 סודר לפי א-ב");
+}
+
+// שיתוף שיר (וואטסאפ וכו'): הטקסט עם הטון השמור בשיר.
+// ``` = גופן ברוחב קבוע בוואטסאפ, כדי שהאקורדים יישארו מעל המילים.
+// בשיר בעברית שורת אקורדים מקבלת סימן כיוון ימין-לשמאל בלתי נראה (כמו במסך: מיושרת לימין)
+async function shareSong(id) {
+    const node = findLibNode(id);
+    if (!node) return;
+    const he = songLang(node) === "he";
+    const body = (node.transpose ? transposeText(node.content || "", node.transpose) : (node.content || ""))
+        .split("\n").map(line => he && isChordLine(line) ? "‏" + line.replace(/(\S)(\s*)$/, "$1‎$2") : line)
+        .join("\n").replace(/\s+$/, "");
+    const text = (node.title || "") + "\n\n```" + body + "```";
+    if (navigator.share) {
+        try { await navigator.share({ title: node.title || "Shiron", text }); } catch (e) { /* המשתמש סגר את חלון השיתוף */ }
+        return;
+    }
+    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+}
+
 function createFolder(parentId) {
     const folderName = prompt("הכנס שם לתיקייה החדשה:");
     if (!folderName) return;
@@ -591,7 +624,14 @@ function renameItem(id) {
 }
 
 function deleteItem(id) {
-    if (confirm("האם אתה בטוח שברצונך למחוק?")) {
+    const target = findParentAndNode(myLibrary, id);
+    if (!target) return;
+    const n = target.node;
+    const inside = n.type === "folder" ? countSongs(n) : 0;
+    const msg = n.type === "folder"
+        ? `למחוק את התיקייה "${n.name}"` + (inside === 1 ? " ואת השיר שבתוכה?" : inside ? ` ואת ${inside} השירים שבתוכה?` : "?")
+        : `למחוק את השיר "${n.title}"?`;
+    if (confirm(msg)) {
         const info = findParentAndNode(myLibrary, id);
         if (info) {
             info.parent.children = info.parent.children.filter(c => c.id !== id);
@@ -728,19 +768,33 @@ function songLang(song) {
     return /[\u0590-\u05FF]/.test((song.content || "") + " " + (song.title || "")) ? "he" : "en";
 }
 
+// שמירת שיר מהחיפוש: קודם בוחרים תיקייה (בספרייה של שפת השיר). אין תיקיות -> נשמר ישר בראשית
 let savingSearchedSong = false;
 saveBtn.addEventListener("click", () => {
     if (!currentSongData || savingSearchedSong) return; // לחיצה כפולה לא שומרת פעמיים
+    const song = currentSongData;
+    const lang = songLang(song);
+    if (!libs[lang].children.some(c => c.type === "folder")) { saveSearchedSong(song, lang, "root"); return; }
+    openFolderPicker("לאיזו תיקייה לשמור?", libs[lang],
+        { rootLabel: "📚 " + (lang === "he" ? "הספרייה העברית" : "הספרייה האנגלית") + " (בלי תיקייה)" },
+        folder => saveSearchedSong(song, lang, folder.id));
+});
+
+function saveSearchedSong(song, lang, folderId) {
+    if (savingSearchedSong || currentSongData !== song) return;
     savingSearchedSong = true;
-    const lang = songLang(currentSongData);
+    // התיקייה נמצאת מחדש לפי המזהה (הספרייה אולי התעדכנה מהענן בזמן שהחלון היה פתוח)
+    const info = folderId !== "root" && findParentAndNode(libs[lang], folderId);
+    const folder = info && info.node.type === "folder" ? info.node : libs[lang];
     // מזהה חדש וייחודי בכל שמירה (אחרת שני עותקים עם אותו מזהה נמחקים יחד)
-    libs[lang].children.push({ ...currentSongData, id: "song_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7) });
+    folder.children.push({ ...song, id: "song_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7) });
+    if (folder.id !== "root") folder.isExpanded = true;
     saveLibrary();
     if (lang !== activeLang) switchLibrary(lang, true);
-    const where = lang === "he" ? "הספרייה העברית" : "הספרייה האנגלית";
+    const where = folder.id === "root" ? (lang === "he" ? "ספרייה העברית" : "ספרייה האנגלית") : "תיקייה \"" + folder.name + "\"";
     saveBtn.innerText = "✅ נשמר ב" + where + "!";
-    setTimeout(() => { saveBtn.innerText = "💾 שמור שיר לראשי"; saveBtn.classList.add("hidden"); savingSearchedSong = false; }, 2500);
-});
+    setTimeout(() => { saveBtn.innerText = "💾 שמור שיר"; saveBtn.classList.add("hidden"); savingSearchedSong = false; }, 2500);
+}
 
 function escapeHtml(t) {
     return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -1056,26 +1110,32 @@ function moveToOtherLibrary(id) {
     showToast("הועבר ל" + (otherLang === "he" ? "ספרייה העברית" : "ספרייה האנגלית"));
 }
 
-// חלון "העבר לתיקייה..." (מחליף גרירה במובייל)
-function openMoveModal(itemId) {
-    const info = findParentAndNode(myLibrary, itemId);
-    if (!info) return;
+// חלון בחירת תיקייה: משמש את "העבר לתיקייה..." (מחליף גרירה במובייל) ואת "שמור שיר"
+function openFolderPicker(title, lib, opts, onPick) {
+    document.getElementById("moveTitle").innerText = title;
     moveFolderList.innerHTML = "";
-    moveFolderList.dir = activeLang === "en" ? "ltr" : "rtl";
+    moveFolderList.dir = lib === libs.en ? "ltr" : "rtl";
     const addFolder = (folder, depth) => {
-        if (folder.id === itemId) return; // לא מעבירים תיקייה לתוך עצמה או לתוך הצאצאים שלה
+        if (folder.id === opts.excludeId) return; // לא מעבירים תיקייה לתוך עצמה או לתוך הצאצאים שלה
         const btn = document.createElement("button");
         btn.className = "move-folder-btn";
         btn.style.paddingInlineStart = (12 + depth * 16) + "px";
-        const isCurrent = !!(info.parent && info.parent.id === folder.id);
-        btn.innerText = (depth === 0 ? "📚 הספרייה הראשית" : "📁 " + folder.name) + (isCurrent ? "  (כאן)" : "");
+        const isCurrent = folder.id === opts.currentId;
+        btn.innerText = (depth === 0 ? (opts.rootLabel || "📚 הספרייה הראשית") : "📁 " + folder.name) + (isCurrent ? "  (כאן)" : "");
         btn.disabled = isCurrent;
-        btn.onclick = () => { moveModal.classList.add("hidden"); moveItem(itemId, folder.id); };
+        btn.onclick = () => { moveModal.classList.add("hidden"); onPick(folder); };
         moveFolderList.appendChild(btn);
         (folder.children || []).filter(c => c.type === "folder").forEach(c => addFolder(c, depth + 1));
     };
-    addFolder(myLibrary, 0);
+    addFolder(lib, 0);
     moveModal.classList.remove("hidden");
+}
+
+function openMoveModal(itemId) {
+    const info = findParentAndNode(myLibrary, itemId);
+    if (!info) return;
+    openFolderPicker("העבר לתיקייה", myLibrary, { excludeId: itemId, currentId: info.parent && info.parent.id },
+        folder => moveItem(itemId, folder.id));
 }
 document.getElementById("closeMoveBtn").onclick = () => moveModal.classList.add("hidden");
 
@@ -1549,6 +1609,7 @@ async function exportBackup(format) {
         a.remove();
         setTimeout(() => URL.revokeObjectURL(a.href), 30000);
         showToast("💾 קובץ הגיבוי ירד (" + songs + " שירים)");
+        lsSet("lastBackupAt", Date.now());
     } catch (err) {
         showToast(navigator.onLine === false ? "📴 צריך אינטרנט כדי ליצור קובץ גיבוי" : "❌ לא הצלחתי ליצור את הקובץ: " + err.message);
     }
@@ -1561,6 +1622,37 @@ document.getElementById("exportBackupBtn").addEventListener("click", () => {
 document.getElementById("exportPdfBtn").addEventListener("click", () => exportBackup("pdf"));
 document.getElementById("exportDocxBtn").addEventListener("click", () => exportBackup("docx"));
 document.getElementById("exportCancelBtn").addEventListener("click", () => exportModal.classList.add("hidden"));
+
+// ===== תזכורת לגיבוי: חודש בלי גיבוי לקובץ -> שואלים בעדינות. "אחר כך" = שוב בעוד שבוע =====
+// (במכשיר שעוד לא גובה ממנו מתחילים לספור מהפעם הראשונה שהגרסה הזאת נפתחה)
+const BACKUP_EVERY_MS = 30 * 864e5, BACKUP_ASK_AGAIN_MS = 7 * 864e5;
+const backupRemindModal = document.getElementById("backupRemindModal");
+function lsNum(k) { try { return Number(localStorage.getItem(k)) || 0; } catch (e) { return 0; } }
+function lsSet(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+
+function maybeRemindBackup() {
+    const now = Date.now();
+    const last = lsNum("lastBackupAt");
+    const from = last || lsNum("backupCountFrom");
+    if (!from) { lsSet("backupCountFrom", now); return; }
+    if (now - from < BACKUP_EVERY_MS || now - lsNum("backupRemindedAt") < BACKUP_ASK_AGAIN_MS) return;
+    if (navigator.onLine === false || isReadOnlyOffline()) return; // הקובץ נבנה בשרת, צריך אינטרנט
+    const data = window.getLibrariesForCloud();
+    if (!(countSongs(data.he) + countSongs(data.en))) return;
+    // חלון אחר פתוח (עריכה, בחירת תיקייה...) -> מנסים שוב בעוד דקה
+    if (document.querySelector(".modal-overlay:not(.hidden)")) { setTimeout(maybeRemindBackup, 60000); return; }
+    lsSet("backupRemindedAt", now);
+    document.getElementById("backupRemindText").innerText = (last
+        ? "הגיבוי האחרון לקובץ היה ב-" + new Date(last).toLocaleDateString("he-IL") + "."
+        : "עוד לא גיבית את השירים לקובץ מהמכשיר הזה.") + " כדאי לשמור עותק עדכני בטלפון, למקרה הצורך.";
+    backupRemindModal.classList.remove("hidden");
+}
+document.getElementById("backupRemindYes").addEventListener("click", () => {
+    backupRemindModal.classList.add("hidden");
+    exportModal.classList.remove("hidden");
+});
+document.getElementById("backupRemindLater").addEventListener("click", () => backupRemindModal.classList.add("hidden"));
+setTimeout(maybeRemindBackup, 8000); // אחרי שהספרייה נטענה מהענן
 
 // קורא את נתוני השחזור מקובץ גיבוי: PDF / Word שנוצרו באפליקציה, או קובץ JSON ישן
 const BACKUP_BEGIN = "SHIRON-BACKUP-V1:", BACKUP_END = ":END-SHIRON-BACKUP";

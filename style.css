@@ -194,6 +194,7 @@ h1.desktop-only::after { content: "☘"; display: block; color: var(--gold); fon
 .lib-search-path { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
 .modal-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.remind-text { margin: 8px 0 16px; line-height: 1.5; }
 .modal-btns button { flex: 1; padding: 9px; border-radius: 6px; border: none; background: var(--gold-soft); color: var(--green-dark); font-weight: bold; cursor: pointer; }
 .modal-btns button.primary { background: var(--green); color: #fff; }
 
