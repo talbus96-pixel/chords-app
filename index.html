@@ -116,7 +116,7 @@
                         <span id="fontSizeLabel"></span>
                         <button id="fontBiggerBtn" title="הגדל גופן">A+</button>
                     </div>
-                    <button id="saveBtn" class="hidden">💾 שמור שיר לראשי</button>
+                    <button id="saveBtn" class="hidden">💾 שמור שיר</button>
                     <button id="saveChangesBtn" class="hidden">💾 שמור שינויים בשיר</button>
                 </div>
 
@@ -172,7 +172,7 @@
     <!-- מודאל העברה לתיקייה -->
     <div id="moveModal" class="modal-overlay hidden">
         <div class="color-palette-card move-card">
-            <h3>העבר לתיקייה</h3>
+            <h3 id="moveTitle">העבר לתיקייה</h3>
             <div id="moveFolderList" class="move-folder-list"></div>
             <button id="closeMoveBtn">ביטול</button>
         </div>
@@ -211,6 +211,18 @@
                 <button id="exportDocxBtn" class="primary">📝 Word</button>
             </div>
             <div class="modal-btns"><button id="exportCancelBtn">ביטול</button></div>
+        </div>
+    </div>
+
+    <!-- תזכורת לגיבוי (חודש בלי גיבוי לקובץ) -->
+    <div id="backupRemindModal" class="modal-overlay hidden">
+        <div class="color-palette-card">
+            <h3>💾 זמן לגיבוי</h3>
+            <div class="edit-hint remind-text" id="backupRemindText"></div>
+            <div class="modal-btns">
+                <button id="backupRemindYes" class="primary">💾 גבה עכשיו</button>
+                <button id="backupRemindLater">אחר כך</button>
+            </div>
         </div>
     </div>
 

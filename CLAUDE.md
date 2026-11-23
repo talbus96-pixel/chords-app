@@ -95,6 +95,8 @@ localStorage (per origin):
 - `cloudBase_<uid>` — last library known to be in the cloud (base for 3-way merge).
 - `songFontSize`, `activeLibLang`, `scrollLevel` (1-12; old `scrollSpeed` ignored), `colorChords` / `nightMode` ("1"/"0"), `shironTheme`,
   `guitarTuning` ("standard" / "halfdown" = the guitar tuned a semitone down; device only, never synced).
+- `lastBackupAt` (ms, set when "גיבוי לקובץ" succeeds), `backupCountFrom` (ms, first open of the version
+  with the reminder on this device), `backupRemindedAt` (ms) — backup reminder, device only.
 
 Firestore: `users_libraries/<uid>` with `libraryData` (he), `libraryDataEn` (en),
 `lastUpdated`. `mergeLibraries` FIELDS include `transpose`. (A `setLists` field existed briefly in
@@ -183,6 +185,22 @@ settings panel (the ⚙️ button, top corner; ids still `accountMenu` / `accoun
 transpose) and "שחזור מגיבוי" (reads the embedded data from our PDF/Word, incl. a Word file re-saved
 elsewhere via a tiny zip reader + DecompressionStream, or an old JSON backup; restore only ADDS what
 is missing, via `mergeLibraries(current, backup, null)`).
+
+Added Nov 2026 (owner approved):
+- "💾 שמור שיר" (search result) opens the folder picker (`openFolderPicker`, the same `#moveModal` as
+  "העבר לתיקייה...", title in `#moveTitle`) for the library of the song's language; no folders => saved
+  straight to the root. The folder is re-found by id at pick time (cloud may have replaced the tree).
+- Delete still uses the native `confirm()`, now with the name (and the song count of a folder).
+- Folder ⋮ menu + root ⋮ menu: "🔤 סדר לפי א-ב" (`sortFolder`: that level only, folders first, then songs,
+  `localeCompare(["he","en"], numeric)`). The root row now has a ⋮ button (no delete / color) so the phone
+  can reach it.
+- Song ⋮ menu: "💬 שתף שיר" (`shareSong`): `navigator.share` (fallback wa.me) with title + text with the
+  saved transpose inside ``` (WhatsApp monospace); in Hebrew songs chord lines get RLM at the start + LRM
+  after the last chord.
+- Backup reminder `#backupRemindModal`: 30 days without a successful file backup (counted from
+  `lastBackupAt`, else `backupCountFrom`) => "💾 גבה עכשיו" (opens `#exportModal`) / "אחר כך" (again in
+  7 days). Checked 8 s after open; skipped offline, in read-only offline mode, with no songs, or while
+  another modal is open (retry in 1 min).
 
 Never use the word "לשאוב"/"שאיבה"/"נשאב" in the UI (owner asked).
 Removed at the owner's request: set lists. Not wanted: chord diagrams. Postponed: share a song.
