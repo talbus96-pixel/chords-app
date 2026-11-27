@@ -378,3 +378,17 @@ html body.night { background-image: none; }
 .scroll-speed button { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--surface-2); cursor: pointer; font-size: 16px; }
 .scroll-speed .scroll-speed-label { min-width: 18px; text-align: center; font-weight: bold; color: var(--muted); font-size: 14px; }
 .main-content { padding-bottom: 160px; }
+
+/* סטטיסטיקת שימוש (רק לבעלים) */
+.stats-card { width: min(92vw, 440px); max-height: 86vh; display: flex; flex-direction: column; }
+.stats-range { margin: 6px 0 10px; }
+.stats-body { overflow-y: auto; flex: 1; min-height: 60px; text-align: right; }
+.stats-summary { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 8px; }
+.stats-num { background: var(--surface-2); border-radius: 8px; padding: 6px 2px; text-align: center; }
+.stats-num b { display: block; font-size: 16px; color: var(--green); }
+.stats-num span { font-size: 11px; color: var(--muted); }
+.stats-list { margin: 0; }
+.stats-person { background: var(--surface-2); border-radius: 6px; padding: 7px 9px; color: var(--text); }
+.stats-person summary { cursor: pointer; }
+.stats-name { font-weight: bold; font-size: 13px; word-break: break-all; }
+.stats-visit { font-size: 12px; padding: 3px 0; border-top: 1px solid var(--border); margin-top: 3px; }
