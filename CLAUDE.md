@@ -61,6 +61,8 @@ repo root (= website):
   icons/source/logo.svg      <- current logo: cream guitar in a gold ring on mocha brown (#6b5639);
                                 icon PNGs are rendered from it (playwright screenshot at 192/512)
   icons/alt-option-3/        <- owner's second choice, kept aside: the same guitar on Irish green
+  stats.js          <- visit counter + owner-only stats page (type="module", imports auth/db from firebase-sync.js)
+  firestore.rules   <- copy of the Firestore rules (the real ones are pasted by the owner in the Firebase console)
   CLAUDE.md (this file)
 
 Other repo: talbus96-pixel/chords-scraper (private) -> scraper.js, deployed by Render.com
@@ -201,6 +203,14 @@ Added Nov 2026 (owner approved):
   `lastBackupAt`, else `backupCountFrom`) => "💾 גבה עכשיו" (opens `#exportModal`) / "אחר כך" (again in
   7 days). Checked 8 s after open; skipped offline, in read-only offline mode, with no songs, or while
   another modal is open (retry in 1 min).
+
+Added Nov 2026 — visit counter (owner approved): stats.js writes one doc per visit to Firestore `visits/<visitorId>_<startMs>`
+`{v, e, s, l, d, dev}` (random device id in localStorage `shironVisitorId`, Google e-mail or null, start/last ms, visible
+seconds, device). Heartbeat every 60 s while visible; 30 min in the background or a login/logout = new visit. Guests
+write too (no anonymous auth — it would break the login flow). ONLY tal123t123@gmail.com may see it: the Firestore rule
+on `visits` allows read only to that verified e-mail (the real protection), and the "מנהל → 📊 סטטיסטיקת שימוש" settings
+section + `#statsModal` are created by JS only while that account is logged in and removed otherwise. Render with
+textContent only (guests can write arbitrary `dev` strings). Never add another viewer without the owner asking.
 
 Never use the word "לשאוב"/"שאיבה"/"נשאב" in the UI (owner asked).
 Removed at the owner's request: set lists. Not wanted: chord diagrams. Postponed: share a song.

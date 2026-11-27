@@ -313,3 +313,6 @@ function setupAuthUI() {
 }
 
 setupAuthUI();
+
+// לשימוש מונה הביקורים (stats.js): אותו חיבור לענן, בלי להשפיע על הסנכרון
+export { auth, db };
